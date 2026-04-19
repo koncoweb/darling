@@ -7,13 +7,18 @@ const internal =
     ? createInternalNeonAuth(neonAuthUrl, { allowAnonymous: true } as any)
     : null;
 
-export const neonAuth: any = internal
-  ? Object.assign(internal.adapter as any, { getJWTToken: internal.getJWTToken })
-  : null;
+export const neonAuth: any = internal ? internal.adapter : null;
 
 export function requireNeonAuth() {
   if (!neonAuth) {
     throw new Error('Missing EXPO_PUBLIC_NEON_AUTH_URL');
   }
   return neonAuth as any;
+}
+
+export function requireGetJWTToken() {
+  if (!internal) {
+    throw new Error('Missing EXPO_PUBLIC_NEON_AUTH_URL');
+  }
+  return internal.getJWTToken;
 }

@@ -1,7 +1,21 @@
-import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-import { neonAuthUrl, requireNeonAuth } from '@/lib/neonAuth';
-import { deleteSecureItem, getSecureItem, setSecureItem } from '@/lib/secureStore';
+import {
+  neonAuthUrl,
+  requireNeonAuth,
+  requireGetJWTToken,
+} from "@/lib/neonAuth";
+import {
+  deleteSecureItem,
+  getSecureItem,
+  setSecureItem,
+} from "@/lib/secureStore";
 
 type DarlingUser = {
   id: string;
@@ -15,14 +29,18 @@ type AuthState = {
   user: DarlingUser | null;
   jwt: string | null;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (name: string, email: string, password: string) => Promise<void>;
+  signUpWithEmail: (
+    name: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
   refreshJwt: () => Promise<string | null>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
 
-const jwtKey = 'darling.neon.jwt';
+const jwtKey = "darling.neon.jwt";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -30,23 +48,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [jwt, setJwt] = useState<string | null>(null);
 
   const refreshJwt = useCallback(async () => {
-    let auth: any;
+    let tokenFn;
     try {
-      auth = requireNeonAuth();
+      tokenFn = requireGetJWTToken();
     } catch {
-      return null;
+      tokenFn = null;
     }
-    const tokenFn = (auth as unknown as { getJWTToken?: () => Promise<string | null> }).getJWTToken;
     const fallbackAnonymous = async () => {
       if (!neonAuthUrl) return null;
       try {
-        const res = await fetch(`${neonAuthUrl.replace(/\/$/, '')}/token/anonymous`, {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-        });
+        const res = await fetch(
+          `${neonAuthUrl.replace(/\/$/, "")}/token/anonymous`,
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          },
+        );
         if (!res.ok) return null;
         const json = (await res.json()) as { token?: string };
-        return typeof json.token === 'string' ? json.token : null;
+        return typeof json.token === "string" ? json.token : null;
       } catch {
         return null;
       }
@@ -73,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       return null;
     }
-    if (typeof token === 'string' && token.length > 0) {
+    if (typeof token === "string" && token.length > 0) {
       await setSecureItem(jwtKey, token);
       setJwt(token);
       return token;
@@ -122,11 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const auth = requireNeonAuth();
       const result = await auth.signIn.email({ email, password });
       if (result?.error) {
-        throw new Error(result.error.message ?? 'Sign in failed');
+        throw new Error(result.error.message ?? "Sign in failed");
       }
       await hydrate();
     },
-    [hydrate]
+    [hydrate],
   );
 
   const signUpWithEmail = useCallback(
@@ -134,19 +154,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const auth = requireNeonAuth();
       const result = await auth.signUp.email({ name, email, password });
       if (result?.error) {
-        throw new Error(result.error.message ?? 'Sign up failed');
+        throw new Error(result.error.message ?? "Sign up failed");
       }
       await hydrate();
     },
-    [hydrate]
+    [hydrate],
   );
 
   const signOut = useCallback(async () => {
     try {
       const auth = requireNeonAuth();
       await auth.signOut();
-    } catch {
-    }
+    } catch {}
     await deleteSecureItem(jwtKey);
     setJwt(null);
     setUser(null);
@@ -163,7 +182,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut,
       refreshJwt,
     }),
-    [isLoading, jwt, refreshJwt, signInWithEmail, signOut, signUpWithEmail, user]
+    [
+      isLoading,
+      jwt,
+      refreshJwt,
+      signInWithEmail,
+      signOut,
+      signUpWithEmail,
+      user,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -172,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuthContext() {
   const ctx = React.useContext(AuthContext);
   if (!ctx) {
-    throw new Error('AuthProvider is missing');
+    throw new Error("AuthProvider is missing");
   }
   return ctx;
 }
