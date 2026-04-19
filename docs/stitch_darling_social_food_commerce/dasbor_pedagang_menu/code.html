@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Darling - Merchant Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#fff5ed",
+                    "on-primary-fixed-variant": "#512800",
+                    "surface-container-high": "#ffddba",
+                    "surface-container-lowest": "#ffffff",
+                    "error-dim": "#b92902",
+                    "inverse-surface": "#190b00",
+                    "secondary-fixed-dim": "#8ce98c",
+                    "surface-container-low": "#ffeedf",
+                    "on-surface-variant": "#7a5426",
+                    "inverse-primary": "#fd8b00",
+                    "on-tertiary-fixed-variant": "#675200",
+                    "on-tertiary-fixed": "#453600",
+                    "secondary-fixed": "#99f899",
+                    "on-primary-fixed": "#180800",
+                    "on-background": "#452800",
+                    "on-surface": "#452800",
+                    "error-container": "#f95630",
+                    "secondary-dim": "#005d1a",
+                    "on-error-container": "#520c00",
+                    "on-tertiary": "#fff2d3",
+                    "tertiary-fixed-dim": "#efc52b",
+                    "secondary": "#006b1f",
+                    "primary-container": "#fd8b00",
+                    "on-secondary-fixed": "#004a13",
+                    "on-secondary-container": "#005f1b",
+                    "tertiary-dim": "#614d00",
+                    "outline": "#986f3f",
+                    "on-tertiary-container": "#5c4900",
+                    "background": "#fff5ed",
+                    "error": "#b02500",
+                    "surface-dim": "#ffcb93",
+                    "tertiary": "#6f5900",
+                    "on-primary-container": "#442100",
+                    "surface": "#fff5ed",
+                    "on-primary": "#fff0e7",
+                    "tertiary-fixed": "#ffd33a",
+                    "tertiary-container": "#ffd33a",
+                    "surface-tint": "#8c4a00",
+                    "primary-dim": "#7b4000",
+                    "surface-variant": "#ffd6ab",
+                    "surface-container-highest": "#ffd6ab",
+                    "on-error": "#ffefec",
+                    "outline-variant": "#d4a46f",
+                    "on-secondary": "#d0ffca",
+                    "primary-fixed": "#fd8b00",
+                    "primary-fixed-dim": "#ea8000",
+                    "inverse-on-surface": "#c29461",
+                    "surface-container": "#ffe4c9",
+                    "primary": "#8c4a00",
+                    "secondary-container": "#99f899",
+                    "on-secondary-fixed-variant": "#006b1f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.5rem",
+                    "lg": "1rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body": [
+                            "Be Vietnam Pro"
+                    ],
+                    "label": [
+                            "Be Vietnam Pro"
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.01em; }
+        .glass-panel {
+            background-color: rgba(255, 245, 237, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .gradient-primary {
+            background: linear-gradient(135deg, #FF8C00, #ffb347);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface pb-24 md:pb-8 pt-16 selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-orange-50/70 dark:bg-stone-950/70 backdrop-blur-xl shadow-sm shadow-orange-900/5 tonal-shift bg-orange-100/50 dark:bg-stone-900/50">
+<div class="flex items-center justify-between px-6 h-16 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-orange-600 dark:text-orange-400">storefront</span>
+<span class="font-plus-jakarta text-sm font-semibold tracking-tight text-orange-600 dark:text-orange-400 font-headline text-xl">Merchant Hub</span>
+</div>
+<!-- Desktop Nav Hidden -->
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-orange-700 dark:text-orange-300 font-headline font-semibold text-sm hover:bg-white/50 dark:hover:bg-stone-800/50 transition-colors px-3 py-1.5 rounded-lg" href="#">Dashboard</a>
+<a class="text-stone-500 dark:text-stone-400 font-headline font-medium text-sm hover:bg-white/50 dark:hover:bg-stone-800/50 transition-colors px-3 py-1.5 rounded-lg" href="#">Sales</a>
+<a class="text-stone-500 dark:text-stone-400 font-headline font-medium text-sm hover:bg-white/50 dark:hover:bg-stone-800/50 transition-colors px-3 py-1.5 rounded-lg" href="#">Menu</a>
+<a class="text-stone-500 dark:text-stone-400 font-headline font-medium text-sm hover:bg-white/50 dark:hover:bg-stone-800/50 transition-colors px-3 py-1.5 rounded-lg" href="#">Account</a>
+</nav>
+<button class="h-8 w-8 rounded-full overflow-hidden bg-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface">
+<img alt="Merchant Profile" class="w-full h-full object-cover" data-alt="Portrait of a friendly street food vendor smiling in an outdoor setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrYHlSjvf_eRkdp5DqvLHfjWhuZAOzu0zo7nm7TxlWoR0DDmRpOOGG7-v6BTICLzfA_TQst2Nsy33kp-NrX22QBSJbxvY7uw9SYdm3K3gc1uUouozK1w46_jGs3gSQb4w9TNZLNUHpvlXf5M3w02n0SjCIDDE9f0uBa15vYA4wBDfif6LgreBS8644U2cHqkCsfYse58qx4jGhPoxwWSz9rbMZCTqiQllubi_0B2JebEsxCQXMsSV9mZbXDVOa5DuFo6G7O7JA9LUj"/>
+</button>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+<!-- Welcome Header -->
+<div class="space-y-2">
+<h1 class="text-3xl font-bold font-headline text-on-surface">Good Morning, Budi!</h1>
+<p class="text-on-surface-variant font-body text-lg">Here's what's happening with your warung today.</p>
+</div>
+<!-- Section 1: Sales Overview (Bento Grid Style) -->
+<section aria-labelledby="sales-overview-heading">
+<h2 class="sr-only" id="sales-overview-heading">Sales Overview</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Main Revenue Card -->
+<div class="md:col-span-2 bg-surface-container-lowest rounded-[24px] p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-sm">
+<!-- Decorative background element -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary-container opacity-20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+<div class="relative z-10 flex justify-between items-start mb-8">
+<div>
+<p class="text-on-surface-variant font-medium mb-1">Today's Revenue</p>
+<h3 class="text-4xl sm:text-5xl font-bold font-headline text-on-surface tracking-tight">Rp 850.000</h3>
+</div>
+<div class="bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-full flex items-center gap-1 font-semibold text-sm">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+                            +12%
+                        </div>
+</div>
+<!-- Placeholder for Chart -->
+<div class="relative z-10 h-32 w-full mt-auto flex items-end gap-2">
+<!-- Simulated Bar Chart -->
+<div class="w-1/6 bg-surface-container-high rounded-t-lg h-[40%] hover:bg-surface-variant transition-colors"></div>
+<div class="w-1/6 bg-surface-container-high rounded-t-lg h-[60%] hover:bg-surface-variant transition-colors"></div>
+<div class="w-1/6 bg-surface-container-high rounded-t-lg h-[30%] hover:bg-surface-variant transition-colors"></div>
+<div class="w-1/6 bg-surface-container-high rounded-t-lg h-[70%] hover:bg-surface-variant transition-colors"></div>
+<div class="w-1/6 bg-surface-container-high rounded-t-lg h-[50%] hover:bg-surface-variant transition-colors"></div>
+<div class="w-1/6 gradient-primary rounded-t-lg h-[90%] shadow-[0_0_15px_rgba(255,140,0,0.3)]"></div>
+</div>
+</div>
+<!-- Orders Side Cards -->
+<div class="flex flex-col gap-6">
+<div class="bg-surface-container-lowest rounded-[24px] p-6 flex-1 flex flex-col justify-center relative overflow-hidden shadow-sm">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-primary opacity-30 text-4xl">shopping_bag</span>
+</div>
+<p class="text-on-surface-variant font-medium mb-2 relative z-10">Total Orders</p>
+<h4 class="text-3xl font-bold font-headline text-on-surface relative z-10">34</h4>
+<p class="text-sm text-secondary font-medium mt-2 relative z-10">+5 from yesterday</p>
+</div>
+<div class="bg-surface-container-lowest rounded-[24px] p-6 flex-1 flex flex-col justify-center relative overflow-hidden shadow-sm">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-secondary opacity-30 text-4xl">star</span>
+</div>
+<p class="text-on-surface-variant font-medium mb-2 relative z-10">Avg Rating</p>
+<h4 class="text-3xl font-bold font-headline text-on-surface relative z-10">4.8</h4>
+<div class="flex items-center text-secondary text-sm mt-2 relative z-10">
+<span class="material-symbols-outlined text-sm mr-1" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm mr-1" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm mr-1" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm mr-1" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm mr-1">star_half</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Active Menu Management -->
+<section aria-labelledby="menu-management-heading">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h2 class="text-2xl font-bold font-headline text-on-surface" id="menu-management-heading">Active Menu</h2>
+<p class="text-on-surface-variant text-sm mt-1">Manage your items for today</p>
+</div>
+<button class="hidden sm:flex gradient-primary text-white font-medium px-6 py-3 rounded-full items-center gap-2 hover:opacity-90 transition-opacity shadow-[0_4px_14px_rgba(255,140,0,0.3)]">
+<span class="material-symbols-outlined">add</span>
+                    Add Product
+                </button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Menu Item 1 -->
+<div class="bg-surface-container-lowest rounded-[24px] p-4 flex gap-4 items-center shadow-sm relative group hover:bg-surface-container-low transition-colors duration-300">
+<div class="w-24 h-24 rounded-2xl overflow-hidden shrink-0 relative">
+<img alt="Bakso Granat" class="w-full h-full object-cover" data-alt="Close up of a steaming bowl of Indonesian Bakso with noodles and rich broth" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUOKv9R447s4qzl0wkbygFdNgp-kzezgS4kQHcitRX55qQoPd1XfazpcV2clz7yA3hxHxZ6rvZTg9HOfqutufCtpbi4c9p96RiP5m2N6WWPYd_e9WWjXvD-DcoDatk8ogMExXFgAb45Vm-OO4oqzlCwQs9BuFLRL5glOzLR-7JozYU9uMYXGths3xZKhKog15V3DNXExL4rnSqxtFruITrsOQ7KIlAlugFYe_9qHyE9fkVuQ9VLQ17jFImDGMflx0HLfwBCY3mFWik"/>
+<!-- Status Badge Overlay -->
+<div class="absolute top-2 left-2 bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                            ONLINE
+                        </div>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-headline font-semibold text-lg text-on-surface truncate">Bakso Granat</h3>
+<p class="text-on-surface-variant text-sm mb-2">Rp 25.000</p>
+<!-- Custom Toggle Switch -->
+<label class="flex items-center cursor-pointer">
+<div class="relative">
+<input checked="" class="sr-only" type="checkbox"/>
+<div class="block bg-secondary w-10 h-6 rounded-full transition-colors"></div>
+<div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform translate-x-4"></div>
+</div>
+<span class="ml-2 text-xs font-medium text-on-surface-variant">Available</span>
+</label>
+</div>
+<!-- Quick Edit Button -->
+<button class="absolute top-4 right-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-surface-variant rounded-full">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<!-- Menu Item 2 -->
+<div class="bg-surface-container-lowest rounded-[24px] p-4 flex gap-4 items-center shadow-sm relative group hover:bg-surface-container-low transition-colors duration-300">
+<div class="w-24 h-24 rounded-2xl overflow-hidden shrink-0 relative">
+<img alt="Es Jeruk Segar" class="w-full h-full object-cover" data-alt="Refreshing glass of freshly squeezed iced orange juice with condensation on the glass" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLY3nxHeN4CqbCHlSjxMPpeymQFFyuxHsitJe2NYaPeWXe8FEjxKf0yK5eyuLpd6xtjRz0cGtSGpldAmXFvjKv1MUO1LaO89t5cigYmtMP244jpaX8VbO4TqmnPlZBmntnCrD-PbdewnwnH1HMor6Qc33TposT-5C0fpo0JD-s84k9-QdiIpRNRymYtWPGhiNw4QLSErJ5psupeIla0y2NYawIc1wOqZJ8AKltKc6YxLJV5iMNtyL0_GVnzMtKXWexYnwp1S_mvkzv"/>
+<!-- Status Badge Overlay -->
+<div class="absolute top-2 left-2 bg-surface-variant text-on-surface text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                            OFFLINE
+                        </div>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-headline font-semibold text-lg text-on-surface opacity-60 truncate">Es Jeruk Segar</h3>
+<p class="text-on-surface-variant text-sm mb-2 opacity-60">Rp 10.000</p>
+<!-- Custom Toggle Switch -->
+<label class="flex items-center cursor-pointer">
+<div class="relative">
+<input class="sr-only" type="checkbox"/>
+<div class="block bg-surface-variant w-10 h-6 rounded-full transition-colors"></div>
+<div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform"></div>
+</div>
+<span class="ml-2 text-xs font-medium text-on-surface-variant">Sold Out</span>
+</label>
+</div>
+<button class="absolute top-4 right-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-surface-variant rounded-full">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<!-- Menu Item 3 -->
+<div class="bg-surface-container-lowest rounded-[24px] p-4 flex gap-4 items-center shadow-sm relative group hover:bg-surface-container-low transition-colors duration-300">
+<div class="w-24 h-24 rounded-2xl overflow-hidden shrink-0 relative">
+<div class="w-full h-full bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant opacity-50 text-3xl">image</span>
+</div>
+<!-- Status Badge Overlay -->
+<div class="absolute top-2 left-2 bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                            ONLINE
+                        </div>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-headline font-semibold text-lg text-on-surface truncate">Mie Ayam</h3>
+<p class="text-on-surface-variant text-sm mb-2">Rp 20.000</p>
+<!-- Custom Toggle Switch -->
+<label class="flex items-center cursor-pointer">
+<div class="relative">
+<input checked="" class="sr-only" type="checkbox"/>
+<div class="block bg-secondary w-10 h-6 rounded-full transition-colors"></div>
+<div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform translate-x-4"></div>
+</div>
+<span class="ml-2 text-xs font-medium text-on-surface-variant">Available</span>
+</label>
+</div>
+<button class="absolute top-4 right-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-surface-variant rounded-full">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Section 3: Recent Activity -->
+<section aria-labelledby="recent-activity-heading">
+<h2 class="text-2xl font-bold font-headline text-on-surface mb-6" id="recent-activity-heading">Recent Activity</h2>
+<div class="bg-surface-container-low rounded-[24px] p-2 space-y-2">
+<!-- Activity Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div>
+<p class="font-headline font-semibold text-on-surface">Order #8892</p>
+<p class="text-sm text-on-surface-variant">2x Bakso Granat, 1x Es Jeruk</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-primary">Rp 60.000</p>
+<p class="text-xs text-on-surface-variant">2 mins ago</p>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">reviews</span>
+</div>
+<div>
+<p class="font-headline font-semibold text-on-surface">New Review</p>
+<p class="text-sm text-on-surface-variant">"Enak banget baksonya mas!"</p>
+</div>
+</div>
+<div class="text-right flex flex-col items-end">
+<div class="flex text-secondary mb-1">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-xs text-on-surface-variant">15 mins ago</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (Mobile Only) -->
+<button class="fixed sm:hidden bottom-24 right-6 w-14 h-14 rounded-2xl gradient-primary text-white shadow-[0_4px_14px_rgba(255,140,0,0.4)] flex items-center justify-center z-40 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-4 pt-2 bg-orange-50/80 dark:bg-stone-950/80 backdrop-blur-xl z-50 rounded-t-2xl shadow-[0_-4px_12px_rgba(255,140,0,0.08)] tonal-shift no-border">
+<!-- Active Tab: Dashboard -->
+<a class="flex flex-col items-center justify-center bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-200 rounded-xl px-5 py-1.5 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-be-vietnam text-[11px] font-medium mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-1.5 hover:text-orange-500 dark:hover:text-orange-300 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-be-vietnam text-[11px] font-medium mt-1">Sales</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-1.5 hover:text-orange-500 dark:hover:text-orange-300 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">restaurant_menu</span>
+<span class="font-be-vietnam text-[11px] font-medium mt-1">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-1.5 hover:text-orange-500 dark:hover:text-orange-300 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-be-vietnam text-[11px] font-medium mt-1">Account</span>
+</a>
+</nav>
+</body></html>

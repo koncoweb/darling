@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Darling - The Kinetic Hearth</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"secondary-fixed-dim": "#8ce98c", "surface-container-low": "#ffeedf", "primary-fixed-dim": "#ea8000", "on-tertiary-container": "#5c4900", "primary-dim": "#7b4000", "tertiary-container": "#ffd33a", secondary: "#006b1f", "secondary-container": "#99f899", error: "#b02500", "surface-tint": "#8c4a00", "on-error-container": "#520c00", outline: "#986f3f", "on-primary": "#fff0e7", tertiary: "#6f5900", "surface-container-highest": "#ffd6ab", "inverse-surface": "#190b00", "secondary-dim": "#005d1a", "inverse-primary": "#fd8b00", "error-container": "#f95630", "on-tertiary-fixed": "#453600", "on-background": "#452800", surface: "#fff5ed", "secondary-fixed": "#99f899", "outline-variant": "#d4a46f", "on-surface-variant": "#7a5426", "on-secondary-fixed-variant": "#006b1f", "on-secondary-container": "#005f1b", "on-tertiary": "#fff2d3", "surface-container-high": "#ffddba", "on-primary-container": "#442100", "surface-container-lowest": "#ffffff", "on-secondary-fixed": "#004a13", "surface-bright": "#fff5ed", "on-primary-fixed": "#180800", primary: "#8c4a00", "on-primary-fixed-variant": "#512800", "primary-container": "#fd8b00", "tertiary-fixed-dim": "#efc52b", "surface-dim": "#ffcb93", "surface-container": "#ffe4c9", "tertiary-fixed": "#ffd33a", "on-tertiary-fixed-variant": "#675200", "on-surface": "#452800", "on-error": "#ffefec", "on-secondary": "#d0ffca", "inverse-on-surface": "#c29461", "error-dim": "#b92902", background: "#fff5ed", "primary-fixed": "#fd8b00", "surface-variant": "#ffd6ab", "tertiary-dim": "#614d00"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}, spacing: {}, fontFamily: {headline: ["Plus Jakarta Sans"], body: ["Be Vietnam Pro"], label: ["Be Vietnam Pro"], display: "Plus Jakarta Sans"}}}};</script>
+<style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff5ed; color: #452800; overflow: hidden; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="h-screen w-full flex flex-col relative bg-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#fff5ed]/70 dark:bg-zinc-900/70 backdrop-blur-lg">
+<button class="hover:opacity-70 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined text-[#FF8C00] dark:text-orange-400 text-2xl">menu</span>
+</button>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold tracking-tighter text-xl text-[#FF8C00] dark:text-orange-500">Darling</h1>
+<div class="hover:opacity-70 transition-opacity active:scale-95 duration-200 w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
+<img alt="Vendor Profile Avatar" class="w-full h-full object-cover" data-alt="close up portrait of a young woman with warm cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADYqxCjhqcOUkhVmcCIPox0ngnRaa4i1MZE7NMPAR0aRobIGGPWOTFg5eOsNqA397IwzkLIy3qpluVD-FFL2wHwTCUXr0vXM8UgPfCZmNZYjsimS63IuDMYAk-m_bYkEYhG5Rzcuzo9QRw0VNhun9VuWMtL2KAdzTunOlL5pZ4ESWILvShVh9WJ0Z6_iXBFsESod5T26YxViXQqwieixGJYPmDst-Rh2NaV2UW3Iqt-zep2FjkdsJzU6eZHmZpkJEEznHiQkfsbgm4"/>
+</div>
+</header>
+<!-- Main Content Area (TikTok Style Full Screen Feed) -->
+<main class="flex-1 w-full h-full relative overflow-hidden bg-inverse-surface">
+<!-- Video Background Container -->
+<div class="absolute inset-0 w-full h-full">
+<img alt="Street Food Video Background" class="w-full h-full object-cover opacity-80" data-alt="vibrant street food stall at night steaming food cinematic lighting shallow depth of field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJFcnldU_KpsG6abPeltgP_m-2XDgDQ5USetTJRXzqQtGgDh2wRZrjepcuXjEeFa8TpIxn-jCartJWpWy03g7JRX9iedOSSVI2o1QrqS0sT2Twire9xFWdaXZlXhoon2VQP3gwo0cDjHbi1nQWq30nWoS-uxz40FbdYwQ5KPw5bl-tQVfG30gsEZPC1oWQVUzIBnLK4H3VmcOeiIQFkMvnztMZOV-tLGnk6_6RltMvsaJ29ReSV6lwtTqtcn5kkeHQVtQqEys_chlz"/>
+<!-- Gradient Overlay for readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface via-inverse-surface/40 to-transparent"></div>
+</div>
+<!-- Content Overlay -->
+<div class="absolute bottom-24 left-0 w-full px-6 pb-6 flex justify-between items-end z-10">
+<!-- Vendor Info (Left) -->
+<div class="flex-1 pr-16 space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-container p-0.5 relative">
+<img alt="Vendor Avatar" class="w-full h-full rounded-full object-cover" data-alt="smiling street food vendor portrait warm lighting night market" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARR-c2bGdda2pRp8_6EAPdG4BzvqQt9z2gC1svYo5hti9uyH5M6lq4Qaca6l8b5qRbGXa0PxEalEyWL3mwn-1aPvKCpd0AIG6dPU9FFSUEmhNLGpCKiKy8aUd0YTM2HbdBi1b91kwLD5UCwcPZBBqGMDa-9jDFPz_VxAJoN5o5AO-35Ddc1rQmE-zf_YRkAwWtfBtbWfg3baWS0q3kC3h9TSXaJJ0duWScJvuk6xG6Rfdh6uV4YoVSkwhE-0GTLnK1f_aEGAhBlRds"/>
+<!-- Active Story Indicator -->
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-inverse-surface"></div>
+</div>
+<div>
+<h2 class="font-headline font-bold text-xl text-surface-bright tracking-tight">The Sizzling Wok</h2>
+<p class="font-body text-surface-variant text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> 0.5 miles away
+                        </p>
+</div>
+</div>
+<p class="font-body text-surface-bright text-sm leading-relaxed max-w-sm drop-shadow-md">
+                    Secret sauce goes on! Watch how we make our signature Pad Kra Pao with extra crispy pork belly. 🔥🍜 #streetfood #bkk
+                </p>
+<!-- Floating CTA -->
+<button class="bg-gradient-to-r from-primary to-primary-container text-surface-bright font-headline font-bold rounded-full py-3 px-8 shadow-[0_8px_32px_rgba(140,74,0,0.4)] flex items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-lg">restaurant_menu</span>
+                    View Menu
+                </button>
+</div>
+<!-- Interaction Buttons (Right) -->
+<div class="flex flex-col items-center gap-6 pb-4">
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest/20 backdrop-blur-md flex items-center justify-center group-hover:bg-primary-container/80 transition-colors">
+<span class="material-symbols-outlined text-surface-bright text-3xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<span class="font-body text-xs font-semibold text-surface-bright drop-shadow-md">12.4K</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest/20 backdrop-blur-md flex items-center justify-center group-hover:bg-surface-container-highest/80 transition-colors">
+<span class="material-symbols-outlined text-surface-bright text-3xl">chat_bubble</span>
+</div>
+<span class="font-body text-xs font-semibold text-surface-bright drop-shadow-md">342</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest/20 backdrop-blur-md flex items-center justify-center group-hover:bg-surface-container-highest/80 transition-colors">
+<span class="material-symbols-outlined text-surface-bright text-3xl">share</span>
+</div>
+<span class="font-body text-xs font-semibold text-surface-bright drop-shadow-md">Share</span>
+</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4 bg-[#fff5ed]/80 dark:bg-zinc-900/80 backdrop-blur-2xl rounded-t-[3rem] shadow-[0_-10px_40px_rgba(69,40,0,0.08)]">
+<button class="flex flex-col items-center justify-center bg-[#fd8b00] text-white rounded-full px-6 py-2 active:scale-90 duration-300 ease-in-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+<span class="font-['Be_Vietnam_Pro'] font-semibold text-[11px] tracking-wide mt-1">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#452800] dark:text-zinc-400 px-4 py-2 hover:bg-orange-100/50 dark:hover:bg-zinc-800 transition-all active:scale-90 duration-300 ease-in-out">
+<span class="material-symbols-outlined">map</span>
+<span class="font-['Be_Vietnam_Pro'] font-semibold text-[11px] tracking-wide mt-1">Explore</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#452800] dark:text-zinc-400 px-4 py-2 hover:bg-orange-100/50 dark:hover:bg-zinc-800 transition-all active:scale-90 duration-300 ease-in-out">
+<span class="material-symbols-outlined">add_a_photo</span>
+<span class="font-['Be_Vietnam_Pro'] font-semibold text-[11px] tracking-wide mt-1">AI Studio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#452800] dark:text-zinc-400 px-4 py-2 hover:bg-orange-100/50 dark:hover:bg-zinc-800 transition-all active:scale-90 duration-300 ease-in-out">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Be_Vietnam_Pro'] font-semibold text-[11px] tracking-wide mt-1">Profile</span>
+</button>
+</nav>
+</body></html>

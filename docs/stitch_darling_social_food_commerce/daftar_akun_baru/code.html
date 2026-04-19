@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Darling - Daftar Sekarang</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffd33a",
+                        "surface-container-highest": "#ffd6ab",
+                        "secondary-fixed": "#99f899",
+                        "tertiary-dim": "#614d00",
+                        "secondary-fixed-dim": "#8ce98c",
+                        "error-dim": "#b92902",
+                        "primary-dim": "#7b4000",
+                        "on-secondary": "#d0ffca",
+                        "on-surface-variant": "#7a5426",
+                        "outline": "#986f3f",
+                        "surface-dim": "#ffcb93",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#512800",
+                        "on-tertiary-container": "#5c4900",
+                        "tertiary-fixed-dim": "#efc52b",
+                        "on-secondary-fixed-variant": "#006b1f",
+                        "primary": "#8c4a00",
+                        "outline-variant": "#d4a46f",
+                        "surface": "#fff5ed",
+                        "primary-fixed-dim": "#ea8000",
+                        "surface-bright": "#fff5ed",
+                        "on-primary": "#fff0e7",
+                        "error": "#b02500",
+                        "surface-tint": "#8c4a00",
+                        "secondary-container": "#99f899",
+                        "on-primary-fixed": "#180800",
+                        "on-tertiary-fixed": "#453600",
+                        "tertiary-container": "#ffd33a",
+                        "tertiary": "#6f5900",
+                        "error-container": "#f95630",
+                        "on-error": "#ffefec",
+                        "inverse-primary": "#fd8b00",
+                        "background": "#fff5ed",
+                        "primary-fixed": "#fd8b00",
+                        "on-surface": "#452800",
+                        "surface-container-high": "#ffddba",
+                        "on-secondary-fixed": "#004a13",
+                        "on-error-container": "#520c00",
+                        "inverse-surface": "#190b00",
+                        "surface-container-low": "#ffeedf",
+                        "on-secondary-container": "#005f1b",
+                        "on-background": "#452800",
+                        "secondary": "#006b1f",
+                        "primary-container": "#fd8b00",
+                        "surface-variant": "#ffd6ab",
+                        "on-tertiary": "#fff2d3",
+                        "surface-container": "#ffe4c9",
+                        "on-primary-container": "#442100",
+                        "inverse-on-surface": "#c29461",
+                        "secondary-dim": "#005d1a",
+                        "on-tertiary-fixed-variant": "#675200"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Be Vietnam Pro", "sans-serif"],
+                        "label": ["Be Vietnam Pro", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .gradient-primary {
+            background: linear-gradient(135deg, #fd8b00 0%, #ea8000 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen antialiased flex flex-col relative overflow-x-hidden">
+<!-- Background Decorative Elements -->
+<div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-surface-container-highest opacity-50 blur-[100px] z-0 pointer-events-none"></div>
+<div class="fixed bottom-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-tertiary-fixed opacity-30 blur-[80px] z-0 pointer-events-none"></div>
+<!-- Main Content Container -->
+<main class="flex-grow flex items-center justify-center p-6 z-10 relative">
+<div class="w-full max-w-md">
+<!-- Logo / Brand Anchor -->
+<div class="text-center mb-8">
+<h1 class="font-headline font-black text-4xl text-primary italic tracking-tight mb-2">Darling</h1>
+<p class="font-body text-on-surface-variant text-sm">Temukan rasa jalanan yang autentik.</p>
+</div>
+<!-- Registration Card -->
+<div class="glass-panel rounded-xl shadow-[0_8px_32px_rgba(140,74,0,0.08)] p-8 border border-white/50">
+<div class="mb-8">
+<h2 class="font-headline font-bold text-2xl text-on-surface tracking-tight">Daftar Sekarang</h2>
+<p class="font-body text-on-surface-variant text-sm mt-1">Mulai perjalanan kulinermu bersama kami.</p>
+</div>
+<form action="#" class="space-y-5" method="POST">
+<!-- Full Name -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface mb-1.5" for="fullName">Nama Lengkap</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">person</span>
+<input class="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/30 rounded-lg py-3.5 pl-11 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all font-body text-sm" id="fullName" name="fullName" placeholder="Masukkan nama lengkap" required="" type="text"/>
+</div>
+</div>
+<!-- Email -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface mb-1.5" for="email">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">mail</span>
+<input class="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/30 rounded-lg py-3.5 pl-11 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all font-body text-sm" id="email" name="email" placeholder="contoh@email.com" required="" type="email"/>
+</div>
+</div>
+<!-- Phone Number -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface mb-1.5" for="phone">Nomor Handphone</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">call</span>
+<input class="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/30 rounded-lg py-3.5 pl-11 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all font-body text-sm" id="phone" name="phone" placeholder="08xx xxxx xxxx" required="" type="tel"/>
+</div>
+</div>
+<!-- Password -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface mb-1.5" for="password">Kata Sandi</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">lock</span>
+<input class="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/30 rounded-lg py-3.5 pl-11 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all font-body text-sm" id="password" name="password" placeholder="Minimal 8 karakter" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Create Account Button -->
+<button class="w-full gradient-primary text-on-primary font-headline font-bold text-base py-3.5 rounded-lg shadow-[0_4px_12px_rgba(253,139,0,0.3)] hover:shadow-[0_6px_16px_rgba(253,139,0,0.4)] hover:-translate-y-0.5 transition-all duration-200 mt-2" type="submit">
+                        Buat Akun
+                    </button>
+</form>
+<!-- Social Sign Up Divider -->
+<div class="mt-8 mb-6 relative flex items-center justify-center">
+<div class="absolute w-full h-px bg-surface-container-high"></div>
+<span class="relative bg-white px-4 text-xs font-label text-outline-variant uppercase tracking-wider">Atau daftar dengan</span>
+</div>
+<!-- Social Buttons -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 bg-surface-container-lowest py-3 rounded-lg ring-1 ring-surface-container-high hover:bg-surface-container-low transition-colors text-sm font-label font-medium text-on-surface" type="button">
+<img alt="Google Logo" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYJWFWBxarEr-ipym2wRP-3Mw_exnkbPkBnMtab06bagYnyYz5ACwSURjsi-UEmQXWkSZt_TkTHtI5LRCrwuD1Bm2sp48XQ3oQfx87qNgwUqT_ibbNJU07aLS-IHQysbbe5nJCgTTv0cCDGns7Y8GGO1eKGAmjsupvULUuc5ev92fu_QstCXWTqAWnzkUcMGzRpgHAyLye9l4c48HGpHLG_oVSEww8masrkT88bXR090lYUrP_D_7HG7ql6EtA2eMIH05mKfmNclFV"/>
+                        Google
+                    </button>
+<button class="flex items-center justify-center gap-2 bg-surface-container-lowest py-3 rounded-lg ring-1 ring-surface-container-high hover:bg-surface-container-low transition-colors text-sm font-label font-medium text-on-surface" type="button">
+<img alt="Facebook Logo" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDesOPoLCRpj8nvhFKMp4hz2jGcGfEs5P1WEbwKEESDuKfKBPMIF2tSJ7qA_JOdNtV3RiOmv6OkzhCqcpsrPbaZWdARViw7HPPd7MMESlfseEXltDVDWr4M4mjb1AiTz4htRDPCS8Gj-c7fE-dpzngeFwv0_ExDnX7UaHfppNOS6B0pOnkt7okJHt4tDULMVfjrRNAEo6fh6_QT45730cUZJ4RgOC5mnz8AI_75bXD7gNzE0YwIU3yNFRBfkdijht5z04UKmPp9-I0f"/>
+                        Facebook
+                    </button>
+</div>
+<!-- Terms and Login Link -->
+<div class="mt-8 text-center space-y-4">
+<p class="text-xs text-on-surface-variant font-body leading-relaxed">
+                        Dengan mendaftar, Anda menyetujui <a class="text-primary font-medium hover:underline" href="#">Syarat &amp; Ketentuan</a> serta <a class="text-primary font-medium hover:underline" href="#">Kebijakan Privasi</a> kami.
+                    </p>
+<p class="text-sm font-body text-on-surface">
+                        Sudah punya akun? <a class="text-primary font-bold hover:underline" href="#">Masuk di sini</a>
+</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>

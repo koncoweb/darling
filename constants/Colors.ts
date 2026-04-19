@@ -1,19 +1,41 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+const palette = {
+  primary: '#FF8C00',
+  secondary: '#90EE90',
+  surface: '#fff5ed',
+  surfaceContainerLow: '#ffeedf',
+  surfaceContainerLowest: '#ffffff',
+  onSurface: '#231a14',
+  onSurfaceMuted: '#5a4a40',
+  outlineVariant: '#b7a59a',
+};
 
 export default {
   light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
+    text: palette.onSurface,
+    background: palette.surface,
+    tint: palette.primary,
+    tabIconDefault: 'rgba(35, 26, 20, 0.35)',
+    tabIconSelected: palette.primary,
+    primary: palette.primary,
+    secondary: palette.secondary,
+    surface: palette.surface,
+    surfaceContainerLow: palette.surfaceContainerLow,
+    surfaceContainerLowest: palette.surfaceContainerLowest,
+    onSurfaceMuted: palette.onSurfaceMuted,
+    outlineVariant: palette.outlineVariant,
   },
   dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
+    text: '#fff5ed',
+    background: '#120c08',
+    tint: palette.primary,
+    tabIconDefault: 'rgba(255, 245, 237, 0.35)',
+    tabIconSelected: palette.primary,
+    primary: palette.primary,
+    secondary: palette.secondary,
+    surface: '#120c08',
+    surfaceContainerLow: '#1a120d',
+    surfaceContainerLowest: '#241a14',
+    onSurfaceMuted: 'rgba(255, 245, 237, 0.72)',
+    outlineVariant: 'rgba(255, 245, 237, 0.2)',
   },
 };

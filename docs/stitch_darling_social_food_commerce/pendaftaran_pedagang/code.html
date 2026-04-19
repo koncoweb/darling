@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Buka Warung Darling</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#8c4a00",
+                        "surface": "#fff5ed",
+                        "inverse-surface": "#190b00",
+                        "secondary-fixed-dim": "#8ce98c",
+                        "surface-dim": "#ffcb93",
+                        "on-primary-container": "#442100",
+                        "on-error": "#ffefec",
+                        "on-background": "#452800",
+                        "tertiary": "#6f5900",
+                        "on-tertiary-fixed-variant": "#675200",
+                        "on-surface": "#452800",
+                        "surface-variant": "#ffd6ab",
+                        "background": "#fff5ed",
+                        "secondary-dim": "#005d1a",
+                        "inverse-primary": "#fd8b00",
+                        "error-dim": "#b92902",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#006b1f",
+                        "on-secondary": "#d0ffca",
+                        "outline-variant": "#d4a46f",
+                        "on-secondary-fixed": "#004a13",
+                        "on-tertiary-container": "#5c4900",
+                        "surface-container-low": "#ffeedf",
+                        "surface-container": "#ffe4c9",
+                        "surface-tint": "#8c4a00",
+                        "tertiary-fixed": "#ffd33a",
+                        "error": "#b02500",
+                        "primary-dim": "#7b4000",
+                        "error-container": "#f95630",
+                        "secondary-container": "#99f899",
+                        "surface-container-highest": "#ffd6ab",
+                        "on-primary-fixed-variant": "#512800",
+                        "surface-bright": "#fff5ed",
+                        "outline": "#986f3f",
+                        "on-tertiary": "#fff2d3",
+                        "on-surface-variant": "#7a5426",
+                        "on-primary-fixed": "#180800",
+                        "surface-container-high": "#ffddba",
+                        "on-tertiary-fixed": "#453600",
+                        "primary-fixed": "#fd8b00",
+                        "tertiary-container": "#ffd33a",
+                        "on-primary": "#fff0e7",
+                        "on-secondary-fixed-variant": "#006b1f",
+                        "on-secondary-container": "#005f1b",
+                        "tertiary-dim": "#614d00",
+                        "primary-fixed-dim": "#ea8000",
+                        "primary-container": "#fd8b00",
+                        "secondary-fixed": "#99f899",
+                        "inverse-on-surface": "#c29461",
+                        "tertiary-fixed-dim": "#efc52b",
+                        "on-error-container": "#520c00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": [
+                            "Plus Jakarta Sans"
+                        ],
+                        "body": [
+                            "Be Vietnam Pro"
+                        ],
+                        "label": [
+                            "Be Vietnam Pro"
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.surface');
+            color: theme('colors.on-surface');
+            font-family: theme('fontFamily.body');
+        }
+        h1, h2, h3, h4, h5, h6, .font-headline {
+            font-family: theme('fontFamily.headline');
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom Gradient for Primary Button */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, theme('colors.primary') 0%, theme('colors.primary-fixed-dim') 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col pt-16 pb-24 md:pb-8 max-w-lg mx-auto bg-surface relative">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/70 dark:bg-zinc-950/70 backdrop-blur-xl flex items-center justify-between px-4 h-16 w-full max-w-lg mx-auto left-1/2 -translate-x-1/2">
+<button class="text-primary hover:bg-orange-50 dark:hover:bg-zinc-800 transition-colors rounded-full p-2 active:scale-95 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline font-bold tracking-tight text-xl text-primary flex-1 text-center pr-10">Buka Warung Darling</h1>
+</header>
+<main class="flex-1 px-4 py-6 flex flex-col gap-8">
+<!-- Welcome Hero Area -->
+<section class="flex flex-col gap-2 items-center text-center">
+<div class="w-24 h-24 bg-surface-container-highest rounded-full flex items-center justify-center mb-2 shadow-sm">
+<span class="material-symbols-outlined text-5xl text-primary" data-icon="storefront" data-weight="fill">storefront</span>
+</div>
+<h2 class="font-headline text-2xl font-bold text-on-surface tracking-tight">Mulai Jualan Sekarang</h2>
+<p class="font-body text-sm text-on-surface-variant">Lengkapi data di bawah untuk bergabung dengan komunitas pedagang Darling.</p>
+</section>
+<!-- Profil Usaha Section -->
+<section class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container-highest/30 flex flex-col gap-5">
+<div class="flex items-center gap-3 pb-3 border-b border-surface-container-low">
+<span class="material-symbols-outlined text-primary" data-icon="store">store</span>
+<h3 class="font-headline font-bold text-lg text-on-surface">Profil Usaha</h3>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label text-sm font-medium text-on-surface" for="nama-warung">Nama Warung/Gerobak</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all font-body" id="nama-warung" placeholder="Contoh: Bakso Pak Kumis" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label text-sm font-medium text-on-surface" for="kategori-kuliner">Kategori Kuliner</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface appearance-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all font-body" id="kategori-kuliner">
+<option disabled="" selected="" value="">Pilih Kategori</option>
+<option value="bakso">Bakso &amp; Mie</option>
+<option value="minuman">Minuman Dingin</option>
+<option value="gorengan">Gorengan &amp; Cemilan</option>
+<option value="nasi">Nasi &amp; Lauk</option>
+<option value="lainnya">Lainnya</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</section>
+<!-- Verifikasi Identitas Section -->
+<section class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container-highest/30 flex flex-col gap-5">
+<div class="flex items-center gap-3 pb-3 border-b border-surface-container-low">
+<span class="material-symbols-outlined text-primary" data-icon="badge">badge</span>
+<h3 class="font-headline font-bold text-lg text-on-surface">Verifikasi Identitas</h3>
+</div>
+<p class="text-xs text-on-surface-variant font-body">Data ini aman dan hanya digunakan untuk verifikasi keamanan.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Foto KTP Upload -->
+<div class="flex flex-col gap-2">
+<span class="font-label text-sm font-medium text-on-surface">Foto KTP</span>
+<button class="h-32 bg-surface-container-low rounded-lg border border-dashed border-outline-variant/50 hover:bg-surface-container transition-colors flex flex-col items-center justify-center gap-2 group">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary" data-icon="add_a_photo">add_a_photo</span>
+</div>
+<span class="text-xs font-medium text-on-surface-variant group-hover:text-primary transition-colors">Ambil Foto KTP</span>
+</button>
+</div>
+<!-- Selfie KTP Upload -->
+<div class="flex flex-col gap-2">
+<span class="font-label text-sm font-medium text-on-surface">Selfie dengan KTP</span>
+<button class="h-32 bg-surface-container-low rounded-lg border border-dashed border-outline-variant/50 hover:bg-surface-container transition-colors flex flex-col items-center justify-center gap-2 group">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary" data-icon="face">face</span>
+</div>
+<span class="text-xs font-medium text-on-surface-variant group-hover:text-primary transition-colors">Ambil Selfie</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Area Operasional Section -->
+<section class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container-highest/30 flex flex-col gap-5">
+<div class="flex items-center gap-3 pb-3 border-b border-surface-container-low">
+<span class="material-symbols-outlined text-primary" data-icon="map">map</span>
+<h3 class="font-headline font-bold text-lg text-on-surface">Area Operasional</h3>
+</div>
+<div class="flex flex-col gap-3">
+<label class="font-label text-sm font-medium text-on-surface">Wilayah Jualan Utama</label>
+<!-- Mock Map Area -->
+<div class="h-40 bg-surface-container-low rounded-lg overflow-hidden relative shadow-inner flex items-center justify-center">
+<img alt="Map View" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity" data-alt="clean minimal stylized street map view focused on an urban area with soft warm lighting" data-location="Jakarta" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1giq6ehrds0zBlSFrkSh0pcWmt8itXK_FWeljAsI2K0yps-voH3XkugK8KmMNgg2-7hMh3f2HCkIO1eUe4G3yYSVPVp7g3aWcurfWITkV-gaPjHRKpfCPdoC2LoxdnpZ4eEmc9Y04cbHwy_OA4P6-XfOC52Uv4Jf5_5sZWbmBPwDuxy81pejWcAiwHTLd4urNOn7tHAtv7oxLRa2TxZbklrjdUqdrKn6u_yP-8C87LGnWuBFVkYQy_1mqGF1-RVFlr6x3tV-mQ9sq"/>
+<div class="absolute inset-0 bg-surface/30 backdrop-blur-[2px]"></div>
+<div class="relative z-10 w-12 h-12 bg-secondary rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,203,147,0.8)] border-2 border-surface-container-lowest animate-bounce">
+<span class="material-symbols-outlined text-on-secondary fill-icon" data-icon="location_on" data-weight="fill">location_on</span>
+</div>
+</div>
+<button class="w-full py-3 bg-surface-container rounded-lg text-primary font-medium text-sm flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="my_location">my_location</span>
+                    Gunakan Lokasi Saat Ini
+                </button>
+</div>
+</section>
+<!-- Jadwal Jualan Section -->
+<section class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container-highest/30 flex flex-col gap-5 mb-6">
+<div class="flex items-center gap-3 pb-3 border-b border-surface-container-low">
+<span class="material-symbols-outlined text-primary" data-icon="schedule">schedule</span>
+<h3 class="font-headline font-bold text-lg text-on-surface">Jadwal Jualan</h3>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Day Toggle Example -->
+<div class="flex items-center justify-between">
+<span class="font-body text-sm text-on-surface">Setiap Hari</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex-1 flex flex-col gap-1">
+<label class="text-xs text-on-surface-variant">Buka</label>
+<div class="bg-surface-container-low rounded-lg px-4 py-2 flex items-center justify-between text-on-surface font-medium">
+<span>08:00</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</div>
+</div>
+<span class="text-on-surface-variant mt-5">-</span>
+<div class="flex-1 flex flex-col gap-1">
+<label class="text-xs text-on-surface-variant">Tutup</label>
+<div class="bg-surface-container-low rounded-lg px-4 py-2 flex items-center justify-between text-on-surface font-medium">
+<span>17:00</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Action -->
+<footer class="fixed bottom-0 w-full max-w-lg left-1/2 -translate-x-1/2 bg-surface/90 backdrop-blur-xl border-t border-surface-container-low p-4 pb-safe flex flex-col gap-4 z-40">
+<label class="flex items-start gap-3 cursor-pointer">
+<div class="relative flex items-center mt-0.5">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-lowest" type="checkbox"/>
+</div>
+<span class="text-xs text-on-surface-variant font-body leading-tight">
+                Saya setuju dengan <a class="text-primary font-medium hover:underline" href="#">Syarat &amp; Ketentuan Pedagang</a> serta Kebijakan Privasi Darling.
+            </span>
+</label>
+<button class="w-full bg-gradient-primary text-white py-4 rounded-xl font-headline font-bold text-lg shadow-[0_8px_16px_-4px_rgba(140,74,0,0.3)] hover:shadow-[0_12px_20px_-4px_rgba(140,74,0,0.4)] transition-all active:scale-[0.98]">
+            Kirim Pendaftaran
+        </button>
+</footer>
+</body></html>
