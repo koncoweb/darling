@@ -1,6 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -69,20 +70,12 @@ export default function StudioScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.surface }]}>
-      <TopAppBar
-        title="Darling"
-        left={
-          <TopAppBarIconButton>
-            <FontAwesome name="bars" size={20} color={colors.primary} />
-          </TopAppBarIconButton>
-        }
-        right={<View style={[styles.smallAvatar, { backgroundColor: colors.surfaceContainerLow }]} />}
-      />
+      <StatusBar style="auto" />
 
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + 72, paddingBottom: 140 + insets.bottom },
+          { paddingTop: insets.top + 20, paddingBottom: 140 + insets.bottom },
         ]}>
         <View style={styles.header}>
           <Text style={[styles.h1, { color: colors.text }]}>Create</Text>

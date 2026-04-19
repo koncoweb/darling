@@ -95,6 +95,30 @@ export type Merchant = {
   updated_at: string;
 };
 
+export async function listActiveMerchants(limit = 30, jwt?: string | null) {
+  const params = new URLSearchParams();
+  params.set(
+    'select',
+    [
+      'id',
+      'owner_user_id',
+      'store_name',
+      'description',
+      'avatar_url',
+      'is_active',
+      'last_lat',
+      'last_lng',
+      'last_active_at',
+      'created_at',
+      'updated_at',
+    ].join(',')
+  );
+  params.set('is_active', 'eq.true');
+  params.set('order', 'last_active_at.desc');
+  params.set('limit', String(limit));
+  return dataApiRequest<Merchant[]>({ path: `/merchants?${params.toString()}`, jwt });
+}
+
 export async function getMyMerchant(ownerUserId: string, jwt?: string | null) {
   const params = new URLSearchParams();
   params.set(

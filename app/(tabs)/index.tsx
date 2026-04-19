@@ -1,5 +1,7 @@
+import '../../lib/bootstrap';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -52,23 +54,7 @@ export default function BerandaScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: '#190b00' }]}>
-      <TopAppBar
-        title="Darling"
-        left={
-          <TopAppBarIconButton>
-            <FontAwesome name="bars" size={20} color={colors.primary} />
-          </TopAppBarIconButton>
-        }
-        right={
-          <TopAppBarIconButton>
-            <Image
-              source={{ uri: avatarUri }}
-              style={styles.topAvatar}
-              resizeMode="cover"
-            />
-          </TopAppBarIconButton>
-        }
-      />
+      <StatusBar style="light" />
 
       <View style={styles.media}>
         <Image source={{ uri: backgroundUri }} style={StyleSheet.absoluteFill} />

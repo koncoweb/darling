@@ -1,8 +1,20 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
+import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location/build/Location';
+import { LocationAccuracy } from 'expo-location/build/Location.types';
 import { Link } from 'expo-router';
 import React from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+    Image,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthContext } from '@/components/auth/AuthProvider';
@@ -81,9 +93,30 @@ export default function ProfilSayaScreen() {
     try {
       const jwt = (await auth.refreshJwt()) ?? auth.jwt;
       if (!jwt) throw new Error('JWT belum tersedia. Silakan coba lagi.');
-      const next = await updateMerchant(jwt, merchant.id, {
-        is_active: !merchant.is_active,
+
+      const nextActive = !merchant.is_active;
+      const patch: Record<string, unknown> = {
+        is_active: nextActive,
         last_active_at: new Date().toISOString(),
+      };
+
+      if (nextActive) {
+        if (Platform.OS === 'web') {
+          throw new Error('Update lokasi belum didukung di web preview.');
+        }
+        const perm = await requestForegroundPermissionsAsync();
+        if (perm.status !== 'granted') {
+          throw new Error('Izin lokasi ditolak. Aktifkan izin lokasi untuk mulai keliling.');
+        }
+        const pos = await getCurrentPositionAsync({
+          accuracy: LocationAccuracy.Balanced,
+        });
+        patch.last_lat = pos.coords.latitude;
+        patch.last_lng = pos.coords.longitude;
+      }
+
+      const next = await updateMerchant(jwt, merchant.id, {
+        ...(patch as any),
       });
       if (next) setMerchant(next);
     } catch (e) {
@@ -95,20 +128,12 @@ export default function ProfilSayaScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.surface }]}>
-      <TopAppBar
-        title="Darling"
-        left={
-          <TopAppBarIconButton>
-            <FontAwesome name="bars" size={20} color={colors.primary} />
-          </TopAppBarIconButton>
-        }
-        right={<View style={[styles.smallAvatar, { backgroundColor: colors.surfaceContainerLow }]} />}
-      />
+      <StatusBar style="auto" />
 
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + 72, paddingBottom: 96 + insets.bottom },
+          { paddingTop: insets.top + 20, paddingBottom: 96 + insets.bottom },
         ]}>
         <SurfaceSection style={styles.hero}>
           <View style={styles.heroRow}>
