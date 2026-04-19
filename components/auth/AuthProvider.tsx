@@ -52,39 +52,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    if (!tokenFn) {
+    const saveAndSetToken = async (token: string) => {
+      await setSecureItem(jwtKey, token);
+      setJwt(token);
+      return token;
+    };
+
+    const handleAnonymousFallback = async () => {
       const anon = await fallbackAnonymous();
       if (anon) {
-        await setSecureItem(jwtKey, anon);
-        setJwt(anon);
-        return anon;
+        return await saveAndSetToken(anon);
       }
       return null;
+    };
+
+    if (!tokenFn) {
+      return await handleAnonymousFallback();
     }
     let token: string | null = null;
     try {
       token = await tokenFn();
     } catch {
-      const anon = await fallbackAnonymous();
-      if (anon) {
-        await setSecureItem(jwtKey, anon);
-        setJwt(anon);
-        return anon;
-      }
-      return null;
+      return await handleAnonymousFallback();
     }
     if (typeof token === 'string' && token.length > 0) {
-      await setSecureItem(jwtKey, token);
-      setJwt(token);
-      return token;
+      return await saveAndSetToken(token);
     }
-    const anon = await fallbackAnonymous();
-    if (anon) {
-      await setSecureItem(jwtKey, anon);
-      setJwt(anon);
-      return anon;
-    }
-    return null;
+    return await handleAnonymousFallback();
   }, []);
 
   const hydrate = useCallback(async () => {
