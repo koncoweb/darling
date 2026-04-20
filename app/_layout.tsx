@@ -1,4 +1,5 @@
 import '@/lib/polyfills/crypto';
+import '@/lib/polyfills/fetch';
 import { BeVietnamPro_400Regular, BeVietnamPro_500Medium } from '@expo-google-fonts/be-vietnam-pro';
 import {
     PlusJakartaSans_600SemiBold,
@@ -64,6 +65,7 @@ function RootLayoutNav() {
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="edit-menu" options={{ presentation: 'modal', headerShown: false }} />
         </Stack>
       </ThemeProvider>
     </AuthProvider>

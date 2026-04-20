@@ -44,3 +44,75 @@ Kita menggunakan **NativeWind v4** (Tailwind CSS untuk React Native) untuk mener
 
 ## 6. Pembaruan OTA (Over-The-Air)
 Kita akan mengintegrasikan **EAS Update** (`expo-updates`). Ini memungkinkan kita merilis perbaikan *bug* UI/UX atau logika *frontend* langsung kepada pengguna tanpa perlu melewati *review* Google Play Store yang memakan waktu, sangat cocok untuk iterasi cepat di fase MVP.
+
+
+---
+
+## 7. Sistem Autentikasi â€” Implementasi & Arsitektur yang Telah Divalidasi
+
+### 7.1 Komponen File Autentikasi
+
+| File | Peran |
+|---|---|
+| `lib/neonAuth.ts` | Inisialisasi adapter Neon Auth. **Satu-satunya tempat yang benar** untuk injeksi header global. |
+| `lib/polyfills/fetch.js` | Interceptor `global.fetch` (dipertahankan sebagai lapisan tambahan, namun bukan solusi utama). |
+| `lib/polyfills/crypto.js` | Polyfill Web Crypto API untuk React Native (diperlukan oleh better-auth). |
+| `components/auth/AuthProvider.tsx` | React Context Provider yang membungkus seluruh state autentikasi: `user`, `jwt`, `isLoading`. |
+| `app/_layout.tsx` | Root layout yang mengimpor polyfill dan membungkus app dengan `<AuthProvider>`. |
+| `app/(auth)/login.tsx` | Layar login dengan form email + password. |
+| `app/(auth)/register.tsx` | Layar registrasi dengan sinkronisasi profil ke `public.profiles`. |
+
+### 7.2 Pola AuthProvider yang Direkomendasikan
+
+Komponen `AuthProvider` mengikuti pola berikut yang telah terbukti stabil:
+
+```typescript
+// Pattern inti AuthProvider
+const hydrate = useCallback(async () => {
+  // 1. Ambil JWT tersimpan dari secure storage
+  const storedJwt = await getSecureItem(jwtKey);
+  setJwt(storedJwt);
+
+  // 2. Verifikasi sesi aktif ke Neon Auth server
+  const sessionResult = await auth.getSession();
+  setUser(sessionResult?.data?.user ?? null);
+
+  // 3. Refresh JWT jika diperlukan (fallback ke anonymous token)
+  await refreshJwt();
+}, [refreshJwt]);
+
+// Jalankan hydrate() setiap kali app dimuat
+useEffect(() => { void hydrate(); }, [hydrate]);
+```
+
+**Penting**: `signInWithEmail()` dan `signUpWithEmail()` **tanpa** `fetchOptions` tambahan karena header sudah diinjeksi di level adapter (`lib/neonAuth.ts`). Jangan tambahkan headers secara manual di sini â€” bisa menyebabkan konflik duplikasi.
+
+### 7.3 Alur Polyfill yang Benar
+
+Urutan pemuatan di `app/_layout.tsx`:
+
+```typescript
+// app/_layout.tsx â€” urutan import WAJIB dipertahankan
+import '@/lib/polyfills/crypto';  // 1. Crypto polyfill (dependency better-auth)
+import '@/lib/polyfills/fetch';   // 2. Fetch interceptor (fallback tambahan)
+// ... rest of imports
+```
+
+### 7.4 Perbedaan Perilaku: Browser vs React Native
+
+| Aspek | Browser Web | React Native / Expo Go |
+|---|---|---|
+| Header `Origin` | Otomatis dikirim oleh browser | **Tidak** dikirim â€” wajib diinjeksi manual |
+| Header `Cookie` | Dikelola otomatis | Perlu konfigurasi khusus |
+| `global.fetch` wrapping | Efektif untuk interceptor | Tidak efektif jika library cache referensi awal |
+| CSRF Protection | Built-in via browser policy | Harus dikonfigurasi eksplisit via allowed domains |
+
+### 7.5 Troubleshooting Cepat
+
+| Pesan Error | Penyebab | Solusi |
+|---|---|---|
+| `Missing or null Origin` | Header `origin` tidak sampai ke server | Pastikan injeksi ada di `fetchOptions` pada `createInternalNeonAuth()` |
+| Selalu "sudah login" saat reload | `signOut` gagal menghancurkan sesi server | Efek samping `customFetchImpl` bypass â€” teratasi dengan solusi di atas |
+| `crypto is not defined` | Web Crypto API tidak tersedia di Hermes engine | Import `lib/polyfills/crypto` di `_layout.tsx` baris pertama |
+| `User already exists` | Email sudah terdaftar di Neon Auth | Tampilkan pesan error dari `result.error.message` |
+

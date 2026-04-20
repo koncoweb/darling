@@ -140,7 +140,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
       const auth = requireNeonAuth();
-      const result = await auth.signIn.email({ email, password });
+      const result = await auth.signIn.email(
+        { email, password, callbackURL: "https://darling.app" },
+      );
       if (result?.error) {
         throw new Error(result.error.message ?? "Sign in failed");
       }
@@ -152,13 +154,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUpWithEmail = useCallback(
     async (name: string, email: string, password: string) => {
       const auth = requireNeonAuth();
-      const result = await auth.signUp.email({ name, email, password });
+      const result = await auth.signUp.email(
+        { name, email, password, callbackURL: "https://darling.app" },
+      );
       if (result?.error) {
         throw new Error(result.error.message ?? "Sign up failed");
       }
+      
+      try {
+        const token = await refreshJwt();
+        if (token && result.data?.user?.id) {
+          const { createUserProfile } = require("@/lib/dataApi");
+          await createUserProfile(token, {
+            id: result.data.user.id,
+            email: result.data.user.email ?? email,
+            name: result.data.user.name ?? name,
+          });
+        }
+      } catch (err) {
+        console.error("Gagal sinkronisasi data user API:", err);
+      }
+
       await hydrate();
     },
-    [hydrate],
+    [hydrate, refreshJwt],
   );
 
   const signOut = useCallback(async () => {

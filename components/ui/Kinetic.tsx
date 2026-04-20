@@ -1,6 +1,7 @@
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Image, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
@@ -10,7 +11,7 @@ export function SurfaceSection({
   style,
 }: {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }) {
   const theme = useColorScheme() ?? 'light';
   const colors = Colors[theme];
@@ -26,7 +27,7 @@ export function SurfaceCard({
   style,
 }: {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }) {
   const theme = useColorScheme() ?? 'light';
   const colors = Colors[theme];
@@ -120,12 +121,10 @@ const styles = StyleSheet.create({
   },
   cta: {
     borderRadius: 999,
+    borderCurve: 'continuous',
     paddingVertical: 12,
     paddingHorizontal: 18,
-    shadowColor: 'rgba(69, 40, 0, 1)',
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
+    boxShadow: '0 10px 18px rgba(69, 40, 0, 0.12)',
     elevation: 6,
   },
   ctaRow: {
@@ -144,6 +143,7 @@ const styles = StyleSheet.create({
     padding: 3,
     justifyContent: 'center',
     alignItems: 'center',
+    borderCurve: 'continuous',
   },
   activeDot: {
     position: 'absolute',

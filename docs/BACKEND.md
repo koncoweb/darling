@@ -37,3 +37,91 @@ Tantangan terbesar dari koneksi langsung ke DB adalah keamanan. Jika kita meleta
 Karena tidak ada *backend* untuk menerbitkan *Pre-signed URL* yang aman untuk mengunggah video, kita memiliki dua opsi klien-sentris:
 1.  **Penyedia Storage Serverless (Supabase Storage / Firebase Storage):** Meskipun database memakai Neon, kita bisa mengandalkan layanan storage *serverless* pihak ketiga yang juga memiliki sistem *Security Rules* (RLS) bawaan untuk menangani unggahan langsung dari klien Android.
 2.  **Upload Langsung dengan Batasan (Direct Cloudinary):** Menggunakan API *unsigned upload* dari Cloudinary dengan batasan (*preset*) ketat (misalnya maksimal ukuran video 50MB, otomatis dikompresi). Setelah video terunggah dan klien mendapat URL-nya, klien menyimpannya ke Neon DB. Opsi ke-2 ini lebih mudah untuk MVP.
+
+
+---
+
+## 6. Autentikasi di Lingkungan Mobile Native â€” Lesson Learned & Best Practice
+
+Implementasi Neon Auth di Expo / React Native memiliki tantangan unik yang berbeda dari lingkungan browser web. Berikut arsitektur dan keputusan teknis yang telah **divalidasi dan berhasil bekerja**.
+
+### Masalah Utama: Header `Origin` di React Native
+
+Spesifikasi Fetch API di browser web secara otomatis menyertakan header `Origin` pada setiap request cross-origin. React Native / Expo Go **tidak melakukan ini** â€” header `Origin` tidak pernah dikirim secara otomatis oleh native HTTP stack.
+
+Neon Auth (dibangun di atas **Better Auth**) mewajibkan header `Origin` atau `Referer` yang valid pada setiap request autentikasi sebagai mekanisme keamanan CSRF. Tanpa ini, server menolak request dengan pesan: **`Missing or null Origin`**.
+
+### Anti-Pattern â€” Solusi yang Tidak Bekerja
+
+**âŒ Polyfill `global.fetch`** â€” Tidak efektif karena `@neondatabase/auth` menggunakan `customFetchImpl` internal di dalam `NeonAuthAdapterCore`. Library ini menyimpan referensi `fetch` pada saat inisialisasi dan memanggilnya secara langsung, men-*bypass* seluruh `global.fetch` interceptor yang dibuat setelahnya.
+
+**âŒ Menambahkan headers per-call** (pada `signIn.email(fetchOptions)`) â€” Header diproses di context yang berbeda dan tidak menjamin kehadirannya di level network request aktual yang dilakukan oleh `customFetchImpl`.
+
+### Best Practice â€” Pattern yang Direkomendasikan
+
+**âœ… Injeksi header di level inisialisasi adapter** via `fetchOptions` pada `createInternalNeonAuth()`:
+
+```typescript
+// lib/neonAuth.ts â€” KONFIGURASI YANG BENAR
+import { createInternalNeonAuth } from '@neondatabase/neon-js/auth';
+
+const TRUSTED_ORIGIN = 'https://darling.app';
+
+const internal = createInternalNeonAuth(neonAuthUrl, {
+  allowAnonymous: true,
+  fetchOptions: {
+    headers: {
+      origin: TRUSTED_ORIGIN,
+      referer: `${TRUSTED_ORIGIN}/`,
+      'x-expo-origin': TRUSTED_ORIGIN,
+    },
+    onRequest: (ctx: any) => {
+      // Callback ini dipanggil di dalam pipeline adapter sebelum setiap request
+      ctx.headers.set('origin', TRUSTED_ORIGIN);
+      ctx.headers.set('referer', `${TRUSTED_ORIGIN}/`);
+      return ctx;
+    },
+  },
+} as any);
+```
+
+Header yang diinjeksi di sini mengalir melalui pipeline internal `NeonAuthAdapterCore` â€” termasuk `customFetchImpl` â€” sehingga **semua** request (signIn, signUp, signOut, getSession, getAnonymousToken) secara konsisten membawa header yang diperlukan.
+
+### Konfigurasi Neon Dashboard yang Wajib
+
+Di **Neon Console â†’ Auth Settings â†’ Allowed Domains**, pastikan:
+- Domain terdaftar: `https://darling.app` (**tanpa trailing slash**)
+- Nilai ini harus **persis sama** dengan nilai `origin` header yang dikirim aplikasi (case-sensitive)
+- Untuk Expo Go (development), origin tetap menggunakan domain production karena diinjeksi secara manual oleh kode â€” bukan oleh sistem
+
+### Alur Autentikasi yang Telah Divalidasi
+
+```
+Expo Go / Android App
+       â”‚
+       â–¼
+lib/neonAuth.ts
+  â””â”€â”€ createInternalNeonAuth(url, { fetchOptions: { origin: 'https://darling.app' } })
+       â”‚
+       â–¼
+NeonAuthAdapterCore (better-auth internal)
+  â””â”€â”€ customFetchImpl: fetch(url, { ...init, headers }) â€” origin sudah ada
+       â”‚
+       â–¼
+Neon Auth Server â€” Validasi Origin âœ… OK
+       â”‚
+       â–¼
+AuthProvider.tsx
+  â”œâ”€â”€ hydrate()     â€” getSession() saat app dibuka
+  â”œâ”€â”€ signUpWithEmail() â€” register + sinkronisasi ke public.profiles
+  â”œâ”€â”€ signInWithEmail() â€” login + refresh JWT
+  â””â”€â”€ signOut()     â€” hapus sesi server + hapus token lokal
+       â”‚
+       â–¼
+expo-secure-store â€” JWT disimpan lokal untuk request berikutnya
+```
+
+### Catatan Sinkronisasi Profile
+
+Setelah `signUp` berhasil, aplikasi melakukan sinkronisasi tambahan ke tabel `public.profiles` via `createUserProfile()` di `lib/dataApi.ts`. Ini diperlukan karena Neon Auth mengelola tabel `neon_auth.users_sync` secara internal â€” tabel `public.profiles` adalah data aplikasi yang dikelola oleh kita sendiri.
+

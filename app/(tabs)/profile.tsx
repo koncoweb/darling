@@ -3,10 +3,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location/build/Location';
 import { LocationAccuracy } from 'expo-location/build/Location.types';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React from 'react';
+import { Image } from 'expo-image';
 import {
-    Image,
     Platform,
     Pressable,
     ScrollView,
@@ -29,10 +29,12 @@ export default function ProfilSayaScreen() {
   const colors = Colors[theme];
   const insets = useSafeAreaInsets();
   const auth = useAuthContext();
+  const router = useRouter();
   const [merchant, setMerchant] = React.useState<Merchant | null>(null);
   const [merchantLoading, setMerchantLoading] = React.useState(false);
   const [storeName, setStoreName] = React.useState('');
   const [storeDesc, setStoreDesc] = React.useState('');
+  const [storeCategory, setStoreCategory] = React.useState('');
   const [merchantError, setMerchantError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -50,6 +52,7 @@ export default function ProfilSayaScreen() {
         if (m) {
           setStoreName(m.store_name);
           setStoreDesc(m.description ?? '');
+          setStoreCategory(m.category ?? '');
         }
       })
       .catch((e) => {
@@ -76,6 +79,7 @@ export default function ProfilSayaScreen() {
         owner_user_id: auth.user.id,
         store_name: storeName.trim(),
         description: storeDesc.trim().length ? storeDesc.trim() : null,
+        category: storeCategory.trim().length ? storeCategory.trim().toLowerCase() : 'other',
       });
       if (!created) throw new Error('Gagal membuat akun pedagang');
       setMerchant(created);
@@ -151,32 +155,38 @@ export default function ProfilSayaScreen() {
 
             <View style={styles.heroText}>
               <Text style={[styles.heroTitle, { color: colors.primary }]} numberOfLines={1}>
-                The Kinetic Hearth
+                {merchant?.store_name ?? auth.user?.email?.split('@')[0] ?? 'Profil Pengguna'}
               </Text>
               <Text style={[styles.heroSubtitle, { color: colors.onSurfaceMuted }]} numberOfLines={2}>
-                Sizzling Wok Magic & Midnight Bites
+                {merchant?.description ?? (merchant?.category ? `Kategori: ${merchant.category}` : 'Mari bereksplorasi rasa hari ini')}
               </Text>
-              <View style={styles.chips}>
-                <Chip icon="star" label="4.9 (1.2k)" />
-                <Chip icon="shopping-bag" label="8k+ Orders" />
-              </View>
+              {merchant ? (
+                <View style={styles.chips}>
+                  <Chip icon="star" label="4.5" />
+                  <Chip icon="shopping-bag" label={merchant.category ?? 'Makanan'} />
+                </View>
+              ) : null}
             </View>
           </View>
 
-          <View style={styles.heroActions}>
-            <GradientCtaButton
-              label="Edit Menu"
-              icon={<FontAwesome name="edit" size={16} color="#fff5ed" />}
-            />
-            <Pressable
-              style={({ pressed }) => [
-                styles.secondaryBtn,
-                { backgroundColor: colors.surfaceContainerLowest },
-                pressed && styles.pressed,
-              ]}>
-              <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>View Analytics</Text>
-            </Pressable>
-          </View>
+          {merchant ? (
+            <View style={styles.heroActions}>
+              <Pressable onPress={() => router.push('/edit-menu')} style={({ pressed }) => [pressed && styles.pressed]}>
+                <GradientCtaButton
+                  label="Edit Menu"
+                  icon={<FontAwesome name="edit" size={16} color="#fff5ed" />}
+                />
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.secondaryBtn,
+                  { backgroundColor: colors.surfaceContainerLowest },
+                  pressed && styles.pressed,
+                ]}>
+                <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Analitik (Segera)</Text>
+              </Pressable>
+            </View>
+          ) : null}
 
           <LinearGradient
             colors={['rgba(253, 139, 0, 0.12)', 'rgba(0,0,0,0)']}
@@ -186,48 +196,52 @@ export default function ProfilSayaScreen() {
           />
         </SurfaceSection>
 
-        <View style={styles.statsGrid}>
-          <StatCard icon="line-chart" value="14%" label="Sales Growth" color={colors.secondary} />
-          <StatCard icon="eye" value="45.2k" label="Profile Views" color={colors.primary} />
-          <StatCard icon="heart" value="8.5k" label="Followers" color="#efc52b" />
-          <StatCard icon="fire" value="Top 5%" label="City Ranking" color="#f95630" />
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Street Stories</Text>
-            <Text style={[styles.sectionSubtitle, { color: colors.onSurfaceMuted }]}>
-              Your latest culinary highlights
-            </Text>
-          </View>
-          <Pressable style={({ pressed }) => [pressed && styles.pressed]}>
-            <View style={styles.seeAllRow}>
-              <Text style={[styles.seeAll, { color: colors.primary }]}>See All</Text>
-              <FontAwesome name="arrow-right" size={12} color={colors.primary} />
+        {merchant ? (
+          <>
+            <View style={styles.statsGrid}>
+              <StatCard icon="line-chart" value="14%" label="Pertumbuhan" color={colors.secondary} />
+              <StatCard icon="eye" value="1.2k" label="Dilihat" color={colors.primary} />
+              <StatCard icon="heart" value="120" label="Favorit" color="#efc52b" />
+              <StatCard icon="fire" value="Top 5%" label="Area Ini" color="#f95630" />
             </View>
-          </Pressable>
-        </View>
 
-        <View style={styles.storyGrid}>
-          <StoryCard
-            uri="https://lh3.googleusercontent.com/aida-public/AB6AXuAg-_zuGHqtomkf4pngDXUini3huXEYjNxenr62Al4Qmc9UCnnHknfJwluE2t-PM2uh0AI844iQc3IqnrwSvEyeh9AKdZc5Sb02MYT6Nl89LHf-FBZCsbR3gxyGqsZOhETMRA6jK-fC8-BRAHwk-1KTHcbpjYrlZzPDnYsx5yznQ2nQuc78MXONOiyoHEzv96qUfOaq5bTyyFiS7nupZkwAFHgxgM29h4DsNWhGmpd8_k9ZjnntomeJj_Fs2mzhM7UL8faRY0YEAzEx"
-            views="12k"
-          />
-          <StoryCard
-            uri="https://lh3.googleusercontent.com/aida-public/AB6AXuD7WJ5WO7z4lZ6X9iNr-ZqUkymXag4L14R5_PlJ9vnk_bAPP0gVkYVZ9K_8svfI3sB-rTvowMB2PS4RzthrWGZcRFVdxr3NiDCjRFNDCJNNFC16U4-xGjMx8NMgl_UiaPGcYlutDbZSpv2hdVw0yA7Cf3ZsF0--ym9HSThuw6u3f3zBLFxRMyEUiYT_lcAgVmIFwiPzL3knEQmu0QodWG9LRkkNrYrx4FgMM6gIftjvMsBRwtYVAhTpzPr25HhtNREtHj4E-r2585x8"
-            views="8.4k"
-          />
-          <StoryCard
-            uri="https://lh3.googleusercontent.com/aida-public/AB6AXuDEfoqQVIraWhSv7bqJp22fhsy_4zsax4PSneOFXgzpElLJIEDjXad5jHWM07cS5ZrPUuERav5pNztk97V-8Eq22PQ4Xs2xB_3h0tCsEZCbDThP4T7DxazUkKVNmMNUC9xaFTCBD3WCcyOLxwZt8AWsJaUNwgBBx8-6oHdvL6vNyAdF2vBpe0HzftBs8nHFnvBcTx9kiafOIs6qfJagZ7DMfr2-XECucwkzKFrjj2ztrtbv6coXioJDiMeSTR8LYQRpIRjCXqHCY3Q-"
-            views="22k"
-          />
-          <SurfaceCard style={styles.newStory}>
-            <View style={styles.newStoryInner}>
-              <FontAwesome name="plus-circle" size={34} color={colors.onSurfaceMuted} />
-              <Text style={[styles.newStoryText, { color: colors.onSurfaceMuted }]}>New Story</Text>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Cerita Jualan Hari Ini</Text>
+                <Text style={[styles.sectionSubtitle, { color: colors.onSurfaceMuted }]}>
+                  Sorotan dari daganganmu
+                </Text>
+              </View>
+              <Pressable style={({ pressed }) => [pressed && styles.pressed]}>
+                <View style={styles.seeAllRow}>
+                  <Text style={[styles.seeAll, { color: colors.primary }]}>Lihat Semua</Text>
+                  <FontAwesome name="arrow-right" size={12} color={colors.primary} />
+                </View>
+              </Pressable>
             </View>
-          </SurfaceCard>
-        </View>
+
+            <View style={styles.storyGrid}>
+              <StoryCard
+                uri="https://lh3.googleusercontent.com/aida-public/AB6AXuAg-_zuGHqtomkf4pngDXUini3huXEYjNxenr62Al4Qmc9UCnnHknfJwluE2t-PM2uh0AI844iQc3IqnrwSvEyeh9AKdZc5Sb02MYT6Nl89LHf-FBZCsbR3gxyGqsZOhETMRA6jK-fC8-BRAHwk-1KTHcbpjYrlZzPDnYsx5yznQ2nQuc78MXONOiyoHEzv96qUfOaq5bTyyFiS7nupZkwAFHgxgM29h4DsNWhGmpd8_k9ZjnntomeJj_Fs2mzhM7UL8faRY0YEAzEx"
+                views="214"
+              />
+              <StoryCard
+                uri="https://lh3.googleusercontent.com/aida-public/AB6AXuD7WJ5WO7z4lZ6X9iNr-ZqUkymXag4L14R5_PlJ9vnk_bAPP0gVkYVZ9K_8svfI3sB-rTvowMB2PS4RzthrWGZcRFVdxr3NiDCjRFNDCJNNFC16U4-xGjMx8NMgl_UiaPGcYlutDbZSpv2hdVw0yA7Cf3ZsF0--ym9HSThuw6u3f3zBLFxRMyEUiYT_lcAgVmIFwiPzL3knEQmu0QodWG9LRkkNrYrx4FgMM6gIftjvMsBRwtYVAhTpzPr25HhtNREtHj4E-r2585x8"
+                views="89"
+              />
+              <StoryCard
+                uri="https://lh3.googleusercontent.com/aida-public/AB6AXuDEfoqQVIraWhSv7bqJp22fhsy_4zsax4PSneOFXgzpElLJIEDjXad5jHWM07cS5ZrPUuERav5pNztk97V-8Eq22PQ4Xs2xB_3h0tCsEZCbDThP4T7DxazUkKVNmMNUC9xaFTCBD3WCcyOLxwZt8AWsJaUNwgBBx8-6oHdvL6vNyAdF2vBpe0HzftBs8nHFnvBcTx9kiafOIs6qfJagZ7DMfr2-XECucwkzKFrjj2ztrtbv6coXioJDiMeSTR8LYQRpIRjCXqHCY3Q-"
+                views="150"
+              />
+              <SurfaceCard style={styles.newStory}>
+                <View style={styles.newStoryInner}>
+                  <FontAwesome name="plus-circle" size={34} color={colors.onSurfaceMuted} />
+                  <Text style={[styles.newStoryText, { color: colors.onSurfaceMuted }]}>Buat Cerita</Text>
+                </View>
+              </SurfaceCard>
+            </View>
+          </>
+        ) : null}
 
         {auth.user ? (
           <SurfaceCard style={styles.authCard}>
@@ -300,9 +314,21 @@ export default function ProfilSayaScreen() {
                   {merchant.store_name}
                 </Text>
                 <Text style={[styles.merchantDesc, { color: colors.onSurfaceMuted }]} numberOfLines={2}>
-                  {merchant.description ?? 'Belum ada deskripsi'}
+                  {merchant.category ? `Kategori: ${merchant.category}` : ''} 
+                  {merchant.description ? ` • ${merchant.description}` : ''}
                 </Text>
                 <View style={styles.merchantActions}>
+                  <Pressable
+                    onPress={() => router.push('/edit-menu')}
+                    style={({ pressed }) => [
+                      styles.merchantBtn,
+                      { backgroundColor: colors.surfaceContainerLow },
+                      pressed && styles.pressed,
+                    ]}>
+                    <Text style={[styles.merchantBtnText, { color: colors.primary }]}>
+                      Edit Menu
+                    </Text>
+                  </Pressable>
                   <Pressable
                     onPress={handleToggleKeliling}
                     disabled={merchantLoading}
@@ -341,6 +367,17 @@ export default function ProfilSayaScreen() {
                     value={storeDesc}
                     onChangeText={setStoreDesc}
                     placeholder="Contoh: kopi susu gula aren, roti bakar"
+                    placeholderTextColor={colors.outlineVariant}
+                    style={[styles.input, { color: colors.text }]}
+                  />
+                </View>
+
+                <Text style={[styles.inputLabel, { color: colors.text }]}>Kategori Jualan</Text>
+                <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerLow }]}>
+                  <TextInput
+                    value={storeCategory}
+                    onChangeText={setStoreCategory}
+                    placeholder="kopi, bakso, sate, atau lainnya"
                     placeholderTextColor={colors.outlineVariant}
                     style={[styles.input, { color: colors.text }]}
                   />
@@ -397,6 +434,7 @@ const styles = StyleSheet.create({
     width: 92,
     height: 92,
     borderRadius: 46,
+    borderCurve: 'circular',
     borderWidth: 4,
   },
   verified: {
@@ -435,10 +473,12 @@ const styles = StyleSheet.create({
   },
   secondaryBtn: {
     borderRadius: 999,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
+    borderCurve: 'continuous',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)',
   },
   secondaryBtnText: {
     fontFamily: 'PlusJakartaSans_700Bold',
@@ -485,6 +525,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 18,
+    borderCurve: 'continuous',
   },
   newStoryInner: {
     alignItems: 'center',
@@ -515,7 +556,8 @@ const styles = StyleSheet.create({
   authBtn: {
     flex: 1,
     borderRadius: 999,
-    paddingVertical: 12,
+    borderCurve: 'continuous',
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255, 214, 171, 0.5)',
@@ -576,7 +618,8 @@ const styles = StyleSheet.create({
   merchantBtn: {
     flex: 1,
     borderRadius: 999,
-    paddingVertical: 12,
+    borderCurve: 'continuous',
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -591,9 +634,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   inputWrap: {
-    borderRadius: 18,
+    borderRadius: 16,
+    borderCurve: 'continuous',
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
   input: {
     fontFamily: 'BeVietnamPro_400Regular',
@@ -601,11 +645,13 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   createMerchantBtn: {
-    borderRadius: 18,
-    paddingVertical: 14,
+    borderRadius: 16,
+    borderCurve: 'continuous',
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 10,
+    boxShadow: '0 4px 12px rgba(253, 139, 0, 0.25)',
   },
   createMerchantText: {
     color: '#fff5ed',
@@ -637,8 +683,9 @@ const chipStyles = StyleSheet.create({
     gap: 8,
     backgroundColor: 'rgba(255,214,171,0.75)',
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 4,
     borderRadius: 999,
+    borderCurve: 'continuous',
   },
   text: {
     fontFamily: 'BeVietnamPro_500Medium',
@@ -708,6 +755,7 @@ const storyStyles = StyleSheet.create({
     width: '48%',
     aspectRatio: 9 / 16,
     borderRadius: 18,
+    borderCurve: 'continuous',
     overflow: 'hidden',
   },
   pressed: {

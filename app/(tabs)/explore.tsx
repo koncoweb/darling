@@ -1,9 +1,10 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { Image, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthContext } from '@/components/auth/AuthProvider';
@@ -11,6 +12,12 @@ import { GradientCtaButton, RingAvatar } from '@/components/ui/Kinetic';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { listActiveMerchants, type Merchant } from '@/lib/dataApi';
+import { 
+  MOCK_MAP_MERCHANTS, 
+  CATEGORY_ICONS, 
+  type MerchantCategory, 
+  type MerchantPin 
+} from '@/lib/merchants';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
@@ -60,39 +67,6 @@ const INITIAL_REGION: Region = {
   latitudeDelta: 0.005,
   longitudeDelta: 0.005,
 };
-
-// Fixed TypeScript type for mock data
-type MerchantPin = Partial<Merchant> & { latitude: number; longitude: number; id: string; store_name: string };
-
-const MOCK_MAP_MERCHANTS: MerchantPin[] = [
-  {
-    id: 'demo-1',
-    store_name: 'Sate Ayam Madura',
-    is_active: true,
-    avatar_url: null,
-    description: 'Sate ayam bumbu kacang spesial khas Madura',
-    latitude: -6.2252,
-    longitude: 106.8103,
-  },
-  {
-    id: 'demo-2',
-    store_name: 'Kopi Keliling',
-    is_active: true,
-    avatar_url: null,
-    description: 'Kopi susu gula aren & robusta murni',
-    latitude: -6.2192,
-    longitude: 106.8203,
-  },
-  {
-    id: 'demo-3',
-    store_name: 'Martabak Manis',
-    is_active: true,
-    avatar_url: null,
-    description: 'Martabak telor & manis dengan berbagai topping',
-    latitude: -6.2302,
-    longitude: 106.8153,
-  },
-];
 
 export default function JelajahScreen() {
   const theme = useColorScheme() ?? 'light';
@@ -145,8 +119,8 @@ export default function JelajahScreen() {
   const onMarkerPress = (m: MerchantPin) => {
     setSelected(m);
     mapRef.current?.animateToRegion({
-      latitude: m.latitude - 0.0015, // Adjusted offset for high zoom
-      longitude: m.longitude,
+      latitude: m.last_lat - 0.0015, // Adjusted offset for high zoom
+      longitude: m.last_lng,
       latitudeDelta: 0.004,
       longitudeDelta: 0.004,
     }, 500);
@@ -170,12 +144,13 @@ export default function JelajahScreen() {
           {MOCK_MAP_MERCHANTS.map((m) => (
             <Marker
               key={m.id}
-              coordinate={{ latitude: m.latitude, longitude: m.longitude }}
+              coordinate={{ latitude: m.last_lat, longitude: m.last_lng }}
               onPress={() => onMarkerPress(m)}
               tracksViewChanges={false}
             >
               <Pin 
                 label={m.store_name} 
+                category={m.category}
                 color={selected?.id === m.id ? colors.primary : colors.secondary} 
                 active={selected?.id === m.id}
                 style={{ top: 0, left: 0 }}
@@ -195,7 +170,7 @@ export default function JelajahScreen() {
             onPress={() => requestLocation(false)} 
             style={({ pressed }) => [
               styles.fab,
-              { backgroundColor: pressed ? colors.surfaceVariant : colors.surface },
+              { backgroundColor: pressed ? colors.surfaceContainerLow : colors.surface },
               { borderColor: colors.outlineVariant + '40' }
             ]}
           >
@@ -309,6 +284,7 @@ const styles = StyleSheet.create({
   searchBar: {
     width: '100%',
     borderRadius: 999,
+    borderCurve: 'continuous',
     paddingVertical: 8,
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -339,21 +315,20 @@ const styles = StyleSheet.create({
   },
   bottomSheetCard: {
     borderRadius: 32,
+    borderCurve: 'continuous',
     paddingTop: 8,
     paddingBottom: 24,
     paddingHorizontal: 20,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
   },
   bottomSheetHandle: {
     width: 40,
     height: 4,
     borderRadius: 2,
+    borderCurve: 'continuous',
     backgroundColor: 'rgba(0,0,0,0.1)',
     alignSelf: 'center',
     marginBottom: 16,
@@ -433,15 +408,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
+    borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     overflow: 'hidden',
     elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
   },
 });
 
@@ -478,17 +451,21 @@ const metaStyles = StyleSheet.create({
 
 function Pin({
   label,
+  category = 'other',
   color,
   active = false,
   style,
   onPress,
 }: {
   label: string;
+  category?: MerchantCategory;
   color: string;
   active?: boolean;
   style: any;
   onPress?: () => void;
 }) {
+  const icon = CATEGORY_ICONS[category] || 'shopping-bag';
+  
   return (
     <View style={[pinStyles.wrap, style]}>
       <View 
@@ -499,7 +476,7 @@ function Pin({
         ]}
       >
         <FontAwesome 
-          name={active ? "cutlery" : "shopping-basket"} 
+          name={icon} 
           size={active ? 14 : 12} 
           color={color} 
         />
@@ -523,14 +500,12 @@ const pinStyles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
+    borderCurve: 'continuous',
     borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
     elevation: 5,
   },
   innerDot: {
