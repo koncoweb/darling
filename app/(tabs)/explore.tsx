@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthContext } from '@/components/auth/AuthProvider';
@@ -125,6 +125,19 @@ export default function JelajahScreen() {
       longitudeDelta: 0.004,
     }, 500);
   };
+
+  // ── Web fallback ────────────────────────────────────────────────────────────
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[styles.screen, styles.webFallback, { backgroundColor: colors.surface }]}>
+        <StatusBar style="dark" />
+        <Text style={[styles.webFallbackTitle, { color: colors.text }]}>🗺️ Peta tidak tersedia di web</Text>
+        <Text style={[styles.webFallbackSub, { color: colors.onSurfaceMuted }]}>
+          Fitur Jelajah membutuhkan aplikasi Expo Go atau build native.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.surface }]}>
@@ -269,6 +282,23 @@ export default function JelajahScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  webFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  webFallbackTitle: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 22,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  webFallbackSub: {
+    fontFamily: 'BeVietnamPro_400Regular',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 22,
   },
   mapArea: {
     flex: 1,

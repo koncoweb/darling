@@ -140,10 +140,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
       const auth = requireNeonAuth();
-      const result = await auth.signIn.email(
-        { email, password, callbackURL: "https://darling.app" },
-      );
+      let result: any;
+      try {
+        result = await auth.signIn.email(
+          { email, password, callbackURL: "https://darling.app" },
+        );
+      } catch (rawErr) {
+        console.error('[Auth] signIn.email threw:', rawErr);
+        throw rawErr instanceof Error
+          ? rawErr
+          : new Error(String(rawErr));
+      }
       if (result?.error) {
+        console.warn('[Auth] signIn.email returned error:', result.error);
         throw new Error(result.error.message ?? "Sign in failed");
       }
       await hydrate();
