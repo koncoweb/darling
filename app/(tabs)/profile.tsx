@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location/build/Location';
 import { LocationAccuracy } from 'expo-location/build/Location.types';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, useFocusEffect } from 'expo-router';
 import React from 'react';
 import { Image } from 'expo-image';
 import {
@@ -82,9 +82,6 @@ export default function ProfilSayaScreen() {
   // Merchant state
   const [merchant, setMerchant] = React.useState<Merchant | null>(null);
   const [merchantLoading, setMerchantLoading] = React.useState(false);
-  const [storeName, setStoreName] = React.useState('');
-  const [storeDesc, setStoreDesc] = React.useState('');
-  const [storeCategory, setStoreCategory] = React.useState('');
   const [merchantError, setMerchantError] = React.useState<string | null>(null);
 
   // User preferences (from DB)
@@ -153,53 +150,45 @@ export default function ProfilSayaScreen() {
     const uid = auth.user.id;
     const jwt = auth.jwt;
 
-    // Load merchant
-    setMerchantLoading(true);
-    setMerchantError(null);
-    getMyMerchant(uid, jwt)
-      .then((m) => {
+    const fetchAll = async () => {
+      try {
+        const [m, pref, notes, favs, history] = await Promise.all([
+          getMyMerchant(uid, jwt),
+          getUserPreferences(uid, jwt),
+          listTasteNotes(uid, jwt),
+          listFavoriteMerchants(uid, jwt),
+          listSummonHistory(uid, 10, jwt),
+        ]);
         if (cancelled) return;
         setMerchant(m);
-        if (m) { setStoreName(m.store_name); setStoreDesc(m.description ?? ''); setStoreCategory(m.category ?? ''); }
-      })
-      .catch((e) => { if (!cancelled) setMerchantError(e instanceof Error ? e.message : 'Gagal memuat data pedagang'); })
-      .finally(() => { if (!cancelled) setMerchantLoading(false); });
+        setUserProfile(pref);
+        setDisplayName(pref?.display_name || auth.user?.email?.split('@')[0] || 'User');
+        setRadarActiveState(pref?.radar_active ?? false);
+        setRadarRadiusState(pref?.radar_radius_meters ?? 500);
+        setPickupNote(pref?.pickup_address ?? '');
+        setTasteNotes(notes);
+        setFavorites(favs);
+        setSummonHistory(history);
+      } catch (err) {
+        console.warn('Profile fetch error', err);
+      }
+    };
 
-    // Load user preferences
-    getUserPreferences(uid, jwt)
-      .then((p) => {
-        if (cancelled || !p) return;
-        setUserProfile(p);
-        if (p.display_name) setDisplayName(p.display_name);
-        setRadarActiveState(p.radar_active);
-        setRadarRadiusState(p.radar_radius_meters);
-        if (p.pickup_note) setPickupAddress(p.pickup_note);
-      })
-      .catch(() => {}); // non-critical
-
-    // Load taste notes
-    setTasteLoading(true);
-    listTasteNotes(uid, jwt)
-      .then((notes) => { if (!cancelled) setTasteNotes(notes); })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setTasteLoading(false); });
-
-    // Load favorites
-    setFavLoading(true);
-    listFavoriteMerchants(uid, jwt)
-      .then((favs) => { if (!cancelled) setFavorites(favs); })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setFavLoading(false); });
-
-    // Load summon history
-    setHistoryLoading(true);
-    listSummonHistory(uid, 10, jwt)
-      .then((recs) => { if (!cancelled) setSummonHistory(recs); })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setHistoryLoading(false); });
+    fetchAll();
 
     return () => { cancelled = true; };
   }, [auth.jwt, auth.user]);
+
+  // Re-fetch merchant specifically when returning to this screen
+  useFocusEffect(
+    React.useCallback(() => {
+      if (auth.user) {
+        getMyMerchant(auth.user.id, auth.jwt).then(m => {
+          setMerchant(m);
+        }).catch(() => {});
+      }
+    }, [auth.user, auth.jwt])
+  );
 
   // Lazy-load history when accordion opens
   React.useEffect(() => {
@@ -210,28 +199,6 @@ export default function ProfilSayaScreen() {
       .catch(() => {})
       .finally(() => setHistoryLoading(false));
   }, [showHistory]);
-
-  async function handleCreateMerchant() {
-    if (!auth.user) return;
-    setMerchantError(null);
-    setMerchantLoading(true);
-    try {
-      const jwt = (await auth.refreshJwt()) ?? auth.jwt;
-      if (!jwt) throw new Error('JWT belum tersedia. Silakan coba lagi.');
-      const created = await createMerchant(jwt, {
-        owner_user_id: auth.user.id,
-        store_name: storeName.trim(),
-        description: storeDesc.trim().length ? storeDesc.trim() : null,
-        category: storeCategory.trim().length ? storeCategory.trim().toLowerCase() : 'other',
-      });
-      if (!created) throw new Error('Gagal membuat akun pedagang');
-      setMerchant(created);
-    } catch (e) {
-      setMerchantError(e instanceof Error ? e.message : 'Gagal membuat akun pedagang');
-    } finally {
-      setMerchantLoading(false);
-    }
-  }
 
   async function handleToggleKeliling() {
     if (!auth.user || !merchant) return;
@@ -349,6 +316,20 @@ export default function ProfilSayaScreen() {
   const isUser = !!auth.user;
   const isMerchant = !!merchant;
 
+  // Merchant Cover Image Logic
+  const getCoverImageSource = () => {
+    if (merchant) {
+      if (merchant.cover_image) {
+        return { uri: `data:image/jpeg;base64,${merchant.cover_image}` };
+      }
+      if (merchant.cover_url) {
+        return { uri: merchant.cover_url };
+      }
+    }
+    // Fallback default avatar for user or empty merchant
+    return { uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBBDNHTfocwvNsUYq-ffjnN4gfTfBW7mMBe7Vwy0ahXJdmsqYtzO-We5w3BjBHeqpZw04SSpPGWKFfm1fG67VnIH1fQs1eKs4PMsTiaT24TYO4v0UzetnQzYsyIjX2yYBCG6zM8Unj53H60lnCNUHfDADyuoxA-6ZxER00x4P79cikB6b_vBz3QzKijfyi4M4KGBPl3yiGdKCtOQcTGxnSJ_oxyLNf3PWQM9y3_ZDwkb4lRzbWHqrSamyD4GuJRp4Tra647kYGYFL9w' };
+  };
+
   return (
     <View style={[styles.screen, { backgroundColor: colors.surface }]}>
       <StatusBar style="auto" />
@@ -362,7 +343,7 @@ export default function ProfilSayaScreen() {
           <View style={styles.heroRow}>
             <View style={styles.avatarWrap}>
               <Image
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBBDNHTfocwvNsUYq-ffjnN4gfTfBW7mMBe7Vwy0ahXJdmsqYtzO-We5w3BjBHeqpZw04SSpPGWKFfm1fG67VnIH1fQs1eKs4PMsTiaT24TYO4v0UzetnQzYsyIjX2yYBCG6zM8Unj53H60lnCNUHfDADyuoxA-6ZxER00x4P79cikB6b_vBz3QzKijfyi4M4KGBPl3yiGdKCtOQcTGxnSJ_oxyLNf3PWQM9y3_ZDwkb4lRzbWHqrSamyD4GuJRp4Tra647kYGYFL9w' }}
+                source={getCoverImageSource()}
                 style={[styles.avatar, { borderColor: colors.surface }]}
               />
               <View style={[styles.verified, { backgroundColor: colors.secondary }]}>
@@ -376,7 +357,7 @@ export default function ProfilSayaScreen() {
               </Text>
               <Text style={[styles.heroSubtitle, { color: colors.onSurfaceMuted }]} numberOfLines={2}>
                 {isMerchant
-                  ? (merchant!.description ?? (merchant!.category ? `Kategori: ${merchant!.category}` : ''))
+                  ? (merchant!.description ?? (merchant!.category && merchant!.category.length > 0 ? `Kategori: ${merchant!.category.join(', ')}` : ''))
                   : 'Pelanggan Darling'}
               </Text>
 
@@ -396,22 +377,35 @@ export default function ProfilSayaScreen() {
               {isMerchant && (
                 <View style={styles.chips}>
                   <Chip icon="star" label="4.5" />
-                  <Chip icon="shopping-bag" label={merchant!.category ?? 'Makanan'} />
+                  <Chip icon="shopping-bag" label={merchant!.category && merchant!.category.length > 0 ? merchant!.category.join(', ') : 'Makanan'} />
                 </View>
               )}
             </View>
           </View>
 
-          {isMerchant && (
-            <View style={styles.heroActions}>
-              <Pressable onPress={() => router.push('/edit-menu')} style={({ pressed }) => [pressed && styles.pressed]}>
-                <GradientCtaButton label="Edit Menu" icon={<FontAwesome name="edit" size={16} color="#fff5ed" />} />
-              </Pressable>
-              <Pressable style={({ pressed }) => [styles.secondaryBtn, { backgroundColor: colors.surfaceContainerLowest }, pressed && styles.pressed]}>
-                <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Analitik (Segera)</Text>
-              </Pressable>
-            </View>
-          )}
+            {isMerchant ? (
+              <View style={styles.heroActions}>
+                <GradientCtaButton 
+                  label="Dasbor Pedagang" 
+                  icon={<FontAwesome name="dashboard" size={16} color="#fff5ed" />} 
+                  onPress={() => router.push('/merchant/dashboard')}
+                />
+                <Pressable onPress={() => router.push('/(tabs)/studio')} style={({ pressed }) => [styles.secondaryBtn, { backgroundColor: colors.surfaceContainerLowest }, pressed && styles.pressed]}>
+                  <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Buka Studio (AI)</Text>
+                </Pressable>
+              </View>
+            ) : isUser ? (
+              <View style={styles.heroActions}>
+                <GradientCtaButton 
+                  label="Mulai Berjualan" 
+                  icon={<FontAwesome name="shopping-bag" size={16} color="#fff5ed" />} 
+                  onPress={() => router.push('/merchant/register')}
+                />
+                <Pressable onPress={() => router.push('/(tabs)/studio')} style={({ pressed }) => [styles.secondaryBtn, { backgroundColor: colors.surfaceContainerLowest, marginTop: 4 }, pressed && styles.pressed]}>
+                  <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Mulai Kreasi Video (AI)</Text>
+                </Pressable>
+              </View>
+            ) : null}
 
           <LinearGradient
             colors={['rgba(253, 139, 0, 0.12)', 'rgba(0,0,0,0)']}
@@ -755,39 +749,7 @@ export default function ProfilSayaScreen() {
               </SurfaceCard>
             )}
 
-            {/* ── Upgrade ke Pedagang Banner ── */}
-            <SurfaceCard style={styles.upgradeCard}>
-              <LinearGradient
-                colors={[colors.primary + '18', 'rgba(0,0,0,0)']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={styles.upgradeRow}>
-                <View style={styles.upgradeIcon}>
-                  <Text style={styles.upgradeEmoji}>🛒</Text>
-                </View>
-                <View style={styles.upgradeText}>
-                  <Text style={[styles.upgradeTitle, { color: colors.text }]}>Ingin Mulai Berjualan?</Text>
-                  <Text style={[styles.upgradeSubtitle, { color: colors.onSurfaceMuted }]}>
-                    Daftar jadi pedagang keliling dan raih penghasilan lebih!
-                  </Text>
-                </View>
-              </View>
-              <Pressable
-                onPress={() => {
-                  Alert.alert('Mulai Berjualan', 'Silakan isi form pendaftaran di bagian akun pedagang.');
-                }}
-                style={({ pressed }) => [pressed && styles.pressed]}
-              >
-                <LinearGradient
-                  colors={[colors.primary, colors.primary + 'cc']}
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                  style={styles.upgradeCta}
-                >
-                  <Text style={styles.upgradeCtaText}>Mulai Berjualan →</Text>
-                </LinearGradient>
-              </Pressable>
-            </SurfaceCard>
+
 
             {/* ── Loyalty Points ── */}
             <SurfaceCard style={styles.loyaltyCard}>
@@ -853,105 +815,6 @@ export default function ProfilSayaScreen() {
           </SurfaceCard>
         )}
 
-        {/* ── Merchant Card (for logged-in users who are or want to become merchants) ── */}
-        {auth.user && (
-          <SurfaceCard style={styles.merchantCard}>
-            <View style={styles.merchantHeader}>
-              <Text style={[styles.merchantTitle, { color: colors.text }]}>Akun Pedagang</Text>
-              {merchant && (
-                <View style={[styles.statusChip, { backgroundColor: merchant.is_active ? colors.secondary : colors.surfaceContainerLow }]}>
-                  <Text style={[styles.statusText, { color: colors.text }]}>
-                    {merchant.is_active ? 'Aktif Keliling' : 'Nonaktif'}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {merchantError && (
-              <Text style={[styles.merchantError, { color: colors.primary }]}>{merchantError}</Text>
-            )}
-
-            {merchant ? (
-              <>
-                <Text style={[styles.merchantName, { color: colors.primary }]} numberOfLines={1}>
-                  {merchant.store_name}
-                </Text>
-                <Text style={[styles.merchantDesc, { color: colors.onSurfaceMuted }]} numberOfLines={2}>
-                  {merchant.category ? `Kategori: ${merchant.category}` : ''}
-                  {merchant.description ? ` • ${merchant.description}` : ''}
-                </Text>
-                <View style={styles.merchantActions}>
-                  <Pressable
-                    onPress={() => router.push('/edit-menu')}
-                    style={({ pressed }) => [styles.merchantBtn, { backgroundColor: colors.surfaceContainerLow }, pressed && styles.pressed]}
-                  >
-                    <Text style={[styles.merchantBtnText, { color: colors.primary }]}>Edit Menu</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={handleToggleKeliling}
-                    disabled={merchantLoading}
-                    style={({ pressed }) => [styles.merchantBtn, { backgroundColor: colors.surfaceContainerLow }, pressed && styles.pressed, merchantLoading && styles.disabled]}
-                  >
-                    <Text style={[styles.merchantBtnText, { color: colors.primary }]}>
-                      {merchant.is_active ? 'Berhenti' : 'Mulai Keliling'}
-                    </Text>
-                  </Pressable>
-                </View>
-              </>
-            ) : (
-              <>
-                <Text style={[styles.merchantDesc, { color: colors.onSurfaceMuted }]}>
-                  Daftarkan akun pedagang untuk upload video dan tampil di peta.
-                </Text>
-
-                <Text style={[styles.inputLabel, { color: colors.text }]}>Nama Gerobak / Toko</Text>
-                <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerLow }]}>
-                  <TextInput
-                    value={storeName}
-                    onChangeText={setStoreName}
-                    placeholder="Contoh: Kopi Keliling Pak Kumis"
-                    placeholderTextColor={colors.outlineVariant}
-                    style={[styles.input, { color: colors.text }]}
-                  />
-                </View>
-
-                <Text style={[styles.inputLabel, { color: colors.text }]}>Deskripsi</Text>
-                <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerLow }]}>
-                  <TextInput
-                    value={storeDesc}
-                    onChangeText={setStoreDesc}
-                    placeholder="Contoh: kopi susu gula aren, roti bakar"
-                    placeholderTextColor={colors.outlineVariant}
-                    style={[styles.input, { color: colors.text }]}
-                  />
-                </View>
-
-                <Text style={[styles.inputLabel, { color: colors.text }]}>Kategori Jualan</Text>
-                <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerLow }]}>
-                  <TextInput
-                    value={storeCategory}
-                    onChangeText={setStoreCategory}
-                    placeholder="kopi, bakso, sate, atau lainnya"
-                    placeholderTextColor={colors.outlineVariant}
-                    style={[styles.input, { color: colors.text }]}
-                  />
-                </View>
-
-                <Pressable
-                  onPress={handleCreateMerchant}
-                  disabled={merchantLoading || storeName.trim().length < 3}
-                  style={({ pressed }) => [pressed && styles.pressed, (merchantLoading || storeName.trim().length < 3) && styles.disabled]}
-                >
-                  <View style={[styles.createMerchantBtn, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.createMerchantText}>
-                      {merchantLoading ? 'Memproses...' : 'Daftar Jadi Pedagang'}
-                    </Text>
-                  </View>
-                </Pressable>
-              </>
-            )}
-          </SurfaceCard>
-        )}
       </ScrollView>
     </View>
   );

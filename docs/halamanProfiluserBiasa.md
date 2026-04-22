@@ -23,7 +23,7 @@ D. Manajemen Interaksi
 Riwayat Panggilan (Summon History): Bukan sekadar riwayat belanja, tapi catatan pedagang mana saja yang pernah dipanggil dan seberapa cepat mereka sampai.
 Review Video: Galeri video pendek (UGC) yang diunggah user saat mengulas produk UMKM. Ini mendukung aspek promosi bagi pedagang.
 3. Komponen UI yang Diperlukan
-KomponenDeskripsiPrioritasRadar SwitchTombol untuk mengaktifkan/nonaktifkan radar deteksi pedagang.TinggiAddress ManagerManajemen lokasi favorit (Rumah, Kantor, Kost).TinggiFavorite ListKartu vertikal berisi pedagang langganan dan status "Sedang Keliling".MenengahMerchant TransitionBanner "Ingin Berjualan?" untuk upgrade ke akun pedagang.Sudah AdaLoyalty PointPoin "Darling" yang bisa ditukar dengan promo atau apresiasi UMKM.Rendah4. Alur Kerja (User Journey) dari ProfilPengaturan Awal: User masuk ke profil, mengatur Radius Radar ke 300 meter.
+KomponenDeskripsiPrioritasRadar SwitchTombol untuk mengaktifkan/nonaktifkan radar deteksi pedagang.TinggiAddress ManagerManajemen lokasi favorit (Rumah, Kantor, Kost).TinggiFavorite ListKartu vertikal berisi pedagang langganan dan status "Sedang Keliling".MenengahMerchant TransitionSatu tombol pusat "Daftar Jadi Pedagang" di area bawah profil.TinggiLoyalty PointPoin "Darling" yang bisa ditukar dengan promo atau apresiasi UMKM.Rendah4. Alur Kerja (User Journey) dari ProfilPengaturan Awal: User masuk ke profil, mengatur Radius Radar ke 300 meter.
 Deteksi: Saat pedagang favorit (misal: Tukang Sate) masuk ke radius tersebut, aplikasi mengirim notifikasi.
 Summon: User membuka profil/home, melihat posisi pedagang, lalu menekan tombol "Panggil Ke Sini".
 Preferensi: Pedagang menerima notifikasi pemanggilan beserta catatan selera user (misal: "Sate 10 tusuk, bumbu kacang pisah").

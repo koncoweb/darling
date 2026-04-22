@@ -55,8 +55,9 @@ Mengacu pada `DESIGN.md` dan prototipe desain yang sudah ada:
 - **Sub-halaman (berdasarkan prototipe yang ada):**
   - Profil Pengguna Biasa (Riwayat interaksi, video tersimpan).
   - Masuk ke Darling / Daftar Akun Baru (Integrasi dengan Neon Auth).
-  - Pendaftaran Pedagang (Formulir upgrade akun ke pedagang).
-  - Dasbor Pedagang (Manajemen menu, status "Mulai Keliling / Berhenti", statistik video).
+  - Pendaftaran Pedagang (Formulir multi-step upgrade akun ke pedagang dengan pemilihan kategori *multi-select*).
+  - Dasbor Pedagang (Pusat kendali operasional: manajemen status keliling, manajemen panggilan pelanggan secara *real-time*, dan statistik bisnis).
+  - Integrasi Studio AI Pedagang (Akses cepat ke pembuatan konten promosi dengan saran cerdas dari AI).
 
 ## 6. Persyaratan Non-Fungsional
 - **Kinerja:** Video feed harus memuat dengan cepat tanpa *lag* (gunakan mekanisme caching). Peta harus responsif saat digeser.

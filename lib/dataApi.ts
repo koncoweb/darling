@@ -123,19 +123,43 @@ export async function listFeedVideos(limit = 10, jwt?: string | null) {
   return dataApiRequest<FeedVideo[]>({ path: `/videos?${params.toString()}`, jwt });
 }
 
+export async function listMyVideos(merchantId: string, limit = 5, jwt?: string | null) {
+  const params = new URLSearchParams();
+  params.set(
+    'select',
+    [
+      'id',
+      'video_url',
+      'thumbnail_url',
+      'caption',
+      'created_at',
+    ].join(',')
+  );
+  params.set('merchant_id', `eq.${merchantId}`);
+  params.set('order', 'created_at.desc');
+  params.set('limit', String(limit));
+  return dataApiRequest<FeedVideo[]>({ path: `/videos?${params.toString()}`, jwt });
+}
+
 export type Merchant = {
   id: string;
   owner_user_id: string;
   store_name: string;
   description: string | null;
   avatar_url: string | null;
-  category: string | null;
+  category: string[] | null;
   is_active: boolean;
   last_lat: number | null;
   last_lng: number | null;
   last_active_at: string | null;
   created_at: string;
   updated_at: string;
+  cover_url?: string | null;
+  cover_image?: string | null;
+  whatsapp_number?: string | null;
+  accepted_payments?: string[] | null;
+  base_location?: string | null;
+  operation_area?: string | null;
 };
 
 export async function listActiveMerchants(limit = 30, jwt?: string | null) {
@@ -155,6 +179,12 @@ export async function listActiveMerchants(limit = 30, jwt?: string | null) {
       'last_active_at',
       'created_at',
       'updated_at',
+      'cover_url',
+      'cover_image',
+      'whatsapp_number',
+      'accepted_payments',
+      'base_location',
+      'operation_area',
     ].join(',')
   );
   params.set('is_active', 'eq.true');
@@ -180,6 +210,12 @@ export async function getMyMerchant(ownerUserId: string, jwt?: string | null) {
       'last_active_at',
       'created_at',
       'updated_at',
+      'cover_url',
+      'cover_image',
+      'whatsapp_number',
+      'accepted_payments',
+      'base_location',
+      'operation_area',
     ].join(',')
   );
   params.set('owner_user_id', `eq.${ownerUserId}`);
@@ -194,7 +230,7 @@ export async function getMyMerchant(ownerUserId: string, jwt?: string | null) {
 export async function createMerchant(
   jwt: string,
   input: Pick<Merchant, 'owner_user_id' | 'store_name'> &
-    Partial<Pick<Merchant, 'description' | 'avatar_url' | 'category'>>
+    Partial<Pick<Merchant, 'description' | 'avatar_url' | 'category' | 'cover_url' | 'cover_image' | 'whatsapp_number' | 'accepted_payments' | 'base_location' | 'operation_area'>>
 ) {
   const body = {
     owner_user_id: input.owner_user_id,
@@ -202,6 +238,12 @@ export async function createMerchant(
     description: input.description ?? null,
     avatar_url: input.avatar_url ?? null,
     category: input.category ?? null,
+    cover_url: input.cover_url ?? null,
+    cover_image: input.cover_image ?? null,
+    whatsapp_number: input.whatsapp_number ?? null,
+    accepted_payments: input.accepted_payments ?? null,
+    base_location: input.base_location ?? null,
+    operation_area: input.operation_area ?? null,
   };
   const created = await dataApiRequest<Merchant[]>({
     path: '/merchants',
@@ -217,7 +259,7 @@ export async function updateMerchant(
   jwt: string,
   merchantId: string,
   patch: Partial<
-    Pick<Merchant, 'store_name' | 'description' | 'avatar_url' | 'category' | 'is_active' | 'last_lat' | 'last_lng' | 'last_active_at'>
+    Pick<Merchant, 'store_name' | 'description' | 'avatar_url' | 'category' | 'is_active' | 'last_lat' | 'last_lng' | 'last_active_at' | 'cover_url' | 'cover_image' | 'whatsapp_number' | 'accepted_payments' | 'base_location' | 'operation_area'>
   >
 ) {
   const params = new URLSearchParams();
@@ -442,7 +484,7 @@ export type FavoriteMerchantRecord = {
   merchants: {
     id: string;
     store_name: string;
-    category: string | null;
+    category: string[] | null;
     avatar_url: string | null;
     is_active: boolean;
     last_lat: number | null;
@@ -494,7 +536,7 @@ export type SummonHistoryRecord = {
   note: string | null;
   merchants: {
     store_name: string;
-    category: string | null;
+    category: string[] | null;
     avatar_url: string | null;
   } | null;
 };
@@ -517,5 +559,27 @@ export async function createSummon(jwt: string, userId: string, merchantId: stri
     preferReturn: true,
   });
   return created[0] ?? null;
+}
+
+export async function updateSummonStatus(
+  jwt: string,
+  summonId: string,
+  status: 'arrived' | 'cancelled'
+) {
+  const params = new URLSearchParams();
+  params.set('id', `eq.${summonId}`);
+  const body: Partial<SummonHistoryRecord> = { status };
+  if (status === 'arrived') {
+    body.arrived_at = new Date().toISOString();
+  }
+
+  const updated = await dataApiRequest<SummonHistoryRecord[]>({
+    path: `/summon_history?${params.toString()}`,
+    method: 'PATCH',
+    jwt,
+    body,
+    preferReturn: true,
+  });
+  return updated[0] ?? null;
 }
 

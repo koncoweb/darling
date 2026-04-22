@@ -1,6 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -18,10 +18,11 @@ export default function StudioScreen() {
   const colors = Colors[theme];
   const insets = useSafeAreaInsets();
   const auth = useAuthContext();
+  const params = useLocalSearchParams<{ mode?: string; initialCaption?: string }>();
   const [merchant, setMerchant] = React.useState<Merchant | null>(null);
   const [videoUrl, setVideoUrl] = React.useState('');
   const [thumbUrl, setThumbUrl] = React.useState('');
-  const [caption, setCaption] = React.useState('');
+  const [caption, setCaption] = React.useState(params.initialCaption || '');
   const [status, setStatus] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -78,8 +79,12 @@ export default function StudioScreen() {
           { paddingTop: insets.top + 20, paddingBottom: 140 + insets.bottom },
         ]}>
         <View style={styles.header}>
-          <Text style={[styles.h1, { color: colors.text }]}>Create</Text>
-          <Text style={[styles.p, { color: colors.onSurfaceMuted }]}>Craft your street food story.</Text>
+          <Text style={[styles.h1, { color: colors.text }]}>Studio AI</Text>
+          <Text style={[styles.p, { color: colors.onSurfaceMuted }]}>
+            {params.mode === 'merchant' 
+              ? 'Promosikan menu andalanmu dengan bantuan AI.' 
+              : 'Craft your street food story.'}
+          </Text>
         </View>
 
         {!auth.user ? (

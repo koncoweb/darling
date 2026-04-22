@@ -80,3 +80,32 @@ Format log mendaftar modifikasi fitur diurutkan berdasarkan kegiatan (secara kro
 | **Debugging Library Internals** | Membaca source code di `node_modules` adalah cara paling akurat memahami execution path aktual sebuah dependency. |
 | **Neon Auth + Better Auth** | Konfigurasi global header harus dilakukan via `fetchOptions` pada `createInternalNeonAuth()` — bukan per-request di level `signIn.email()`. |
 | **Domain Konfigurasi Neon** | Pastikan domain di Neon Auth Dashboard (`https://darling.app`) tanpa trailing slash dan cocok persis dengan nilai `origin` yang dikirim — case-sensitive. |
+
+## [Unreleased] - 2026-04-22 (Sesi Refactoring UI Profil & Registrasi Pedagang Multi-Select)
+
+### [05:00 - 05:45 WIB] Peningkatan Pengalaman Registrasi Pedagang
+- **Added**: Form registrasi pedagang kini menggunakan sistem *multi-step* agar pengguna tidak *overwhelmed* dengan formulir yang panjang.
+- **Changed**: Input kategori jualan diubah dari input teks bebas menjadi komponen *multi-select chips dropdown*.
+- **Changed**: Struktur kolom database `merchants.category` dimigrasi dari `TEXT` menjadi `TEXT[]` (Array) untuk menampung banyak pilihan kategori sekaligus secara konsisten.
+- **Changed**: Dokumentasi arsitektur di `docs/backend.md` diperbarui untuk menjelaskan penggunaan `text[]` sebagai penyimpanan kategori.
+- **Fixed**: Menghilangkan duplikasi tombol "Daftar Jadi Pedagang" di halaman Profil pengguna biasa, menyisakan satu tombol konversi yang terpusat di area bawah profil.
+- **Fixed**: Mengurangi kompleksitas state dan penanganan *error* pada tahap awal di form registrasi pedagang.
+- **Fixed**: Memperbaiki navigasi tombol "Dasbor Pedagang" di halaman Profil agar mengarah ke rute yang benar tanpa pembungkus Pressable redundan.
+- **Fixed**: Sinkronisasi nama properti profil (`radar_radius_meters` & `pickup_address`) antara frontend dan backend untuk menghilangkan error TypeScript.
+
+### [09:00 - 10:30 WIB] Implementasi Dasbor Pedagang & Integrasi AI Studio
+- **Added**: Layar Dasbor Pedagang (`app/merchant/dashboard.tsx`) sebagai pusat kendali operasional pedagang.
+- **Features**: Toggle status "Keliling" (Aktif) vs "Istirahat" (Off) dengan pembaruan *real-time* ke database Neon.
+- **Features**: Implementasi manajemen Panggilan/Summon dari pelanggan dengan aksi "Tiba" (Arrive) yang memperbarui status transaksi.
+- **Features**: Integrasi mendalam ke AI Studio menggunakan parameter route (`mode: 'merchant'`) untuk memberikan saran promosi otomatis (contoh: "Beli 2 Gratis 1").
+- **Added**: Feed "Cerita Anda" pada dasbor yang menampilkan daftar video promosi milik pedagang sendiri menggunakan fungsi `listMyVideos`.
+- **Improved**: Sinkronisasi status merchant di halaman Profil menggunakan `useFocusEffect` untuk memastikan data terbaru selalu ditampilkan saat kembali dari dasbor.
+
+### Ringkasan Pelajaran Teknis (Sesi Integrasi Pedagang)
+
+| Kendala / Masalah | Solusi & Pembelajaran |
+|---|---|
+| **Error Typing UserProfile** | Masalah: Error `Property 'radar_radius' does not exist`. <br>Solusi: Sinkronisasi ulang dengan skema database di `dataApi.ts`. <br>Pelajaran: Selalu verifikasi nama kolom di `lib/dataApi.ts` karena sering ada perbedaan antara *legacy column names* dan *current schema*. |
+| **Navigasi Tombol Macet** | Masalah: Tombol "Dasbor Pedagang" dibungkus `Pressable` di luar `GradientCtaButton`. <br>Solusi: Gunakan properti `onPress` bawaan dari komponen kustom untuk menghindari konflik *event handler*. |
+| **Data Out-of-Sync** | Masalah: Status merchant tidak terupdate saat kembali dari Dashboard ke Profile. <br>Solusi: Menggunakan `useFocusEffect` dari `@react-navigation/native` daripada `useEffect` standar untuk trigger ulang pengambilan data setiap kali layar difokuskan. |
+| **Konfigurasi Route** | Masalah: Error navigasi saat rute baru ditambahkan. <br>Solusi: Pastikan file `app/_layout.tsx` telah mendaftarkan folder/file baru dalam struktur `Stack`. |

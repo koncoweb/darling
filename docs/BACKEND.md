@@ -123,5 +123,16 @@ expo-secure-store â€” JWT disimpan lokal untuk request berikutnya
 
 ### Catatan Sinkronisasi Profile
 
-Setelah `signUp` berhasil, aplikasi melakukan sinkronisasi tambahan ke tabel `public.profiles` via `createUserProfile()` di `lib/dataApi.ts`. Ini diperlukan karena Neon Auth mengelola tabel `neon_auth.users_sync` secara internal â€” tabel `public.profiles` adalah data aplikasi yang dikelola oleh kita sendiri.
+Setelah `signUp` berhasil, aplikasi melakukan sinkronisasi tambahan ke tabel `public.profiles` via `createUserProfile()` di `lib/dataApi.ts`. Ini diperlukan karena Neon Auth mengelola tabel `neon_auth.users_sync` secara internal — tabel `public.profiles` adalah data aplikasi yang dikelola oleh kita sendiri.
 
+---
+
+## 7. Skema Database: Kategori Multi-Select
+
+Untuk mendukung profil pedagang yang lebih informatif, sistem kategori pada tabel `merchants` telah diubah untuk menggunakan array (`text[]`) di Neon PostgreSQL. Pilihan ini diambil alih-alih menggunakan tabel *join* (*many-to-many*) karena:
+
+1. **Kesederhanaan Query:** Memudahkan React Native/Expo klien mengambil semua kategori dengan satu kueri sederhana tanpa perlu melakukan `JOIN`.
+2. **Kesesuaian dengan Neon Serverless:** Mengurangi beban transaksi database dan latensi koneksi langsung dari mobile.
+3. **Kompatibilitas Tipe:** Driver Drizzle ORM atau interaksi via SDK mendukung konversi otomatis array string di PostgreSQL (`text[]`) menjadi array objek di Typescript (`string[]`). 
+
+Pada UI aplikasi (misalnya saat pendafataran pedagang), input tipe string biasa diubah menjadi *multi-select chips* sehingga input lebih seragam dan bebas *typo*. Format array ini kemudian digabungkan dengan fungsi bawaan `.join(', ')` di bagian frontend untuk keperluan presentasi UI di Profil Merchant dan Eksplorasi.
