@@ -4,7 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 // Indonesian Street Food Categories & Type
 export type MerchantCategory = 'sate' | 'bakso' | 'nasigoreng' | 'bubur' | 'kopi' | 'martabak' | 'minuman' | 'gorengan' | 'siomay' | 'soto' | 'other';
 
-export type MerchantPin = Partial<Merchant> & { 
+export type MerchantPin = Omit<Partial<Merchant>, 'category'> & { 
   id: string; 
   store_name: string;
   category: MerchantCategory;

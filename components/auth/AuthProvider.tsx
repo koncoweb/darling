@@ -99,22 +99,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let token: string | null = null;
     try {
       token = await tokenFn();
-    } catch {
+    } catch (err) {
+      console.warn('[Auth] tokenFn threw error, trying fallbackAnonymous:', err);
       const anon = await fallbackAnonymous();
       if (anon) {
+        console.log('[Auth] Using fallback anonymous token after error');
         await setSecureItem(jwtKey, anon);
         setJwt(anon);
         return anon;
       }
       return null;
     }
+    
     if (typeof token === "string" && token.length > 0) {
       await setSecureItem(jwtKey, token);
       setJwt(token);
       return token;
     }
+    
+    console.warn('[Auth] tokenFn returned empty/null, trying fallbackAnonymous');
     const anon = await fallbackAnonymous();
     if (anon) {
+      console.log('[Auth] Using fallback anonymous token');
       await setSecureItem(jwtKey, anon);
       setJwt(anon);
       return anon;

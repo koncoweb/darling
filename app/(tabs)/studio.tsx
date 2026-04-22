@@ -84,23 +84,42 @@ export default function StudioScreen() {
   };
 
   async function handleCreateVideo() {
-    if (!merchant || !videoUri) return;
+    if (!merchant || !videoUri) {
+      console.warn('[Studio] Missing merchant or videoUri:', { merchant: !!merchant, video: !!videoUri });
+      return;
+    }
     setStatus(null);
     setIsSubmitting(true);
     try {
+      console.log('[Studio] Starting upload flow for merchant:', merchant.store_name, `(${merchant.id})`);
       const jwt = (await auth.refreshJwt()) ?? auth.jwt;
-      if (!jwt) throw new Error('JWT belum tersedia. Silakan coba lagi.');
+      if (!jwt) {
+        console.error('[Studio] No JWT available');
+        throw new Error('JWT belum tersedia. Silakan coba lagi.');
+      }
+      
+      // Diagnostic: Check JWT Role
+      try {
+        const payload = JSON.parse(atob(jwt.split('.')[1]));
+        console.log('[Studio] JWT Diagnostic - Role:', payload.role, 'Sub:', payload.sub);
+      } catch (e) {
+        console.warn('[Studio] Could not decode JWT for diagnostics');
+      }
+      
+      console.log('[Studio] JWT obtained, starting Cloudinary upload...');
 
       // 1. Upload to Cloudinary
       setIsProcessing(true);
       setStatus('Uploading to Cloudinary...');
       
       const cloudinaryRes = await uploadToCloudinary(videoUri, 'video');
+      console.log('[Studio] Cloudinary upload success:', cloudinaryRes.secure_url);
       
       setIsProcessing(false);
       setStatus('Saving to database...');
 
       // 2. Save URL to Neon DB
+      console.log('[Studio] Saving video metadata to Neon DB...');
       const created = await createVideo(jwt, {
         merchant_id: merchant.id,
         video_url: cloudinaryRes.secure_url,
@@ -108,7 +127,10 @@ export default function StudioScreen() {
         caption: caption.trim().length ? caption.trim() : null,
       });
 
-      if (!created) throw new Error('Gagal publish video ke database');
+      if (!created) {
+        console.error('[Studio] createVideo returned null');
+        throw new Error('Gagal publish video ke database');
+      }
       
       Alert.alert('Sukses', 'Video Anda telah berhasil di-publish!');
       

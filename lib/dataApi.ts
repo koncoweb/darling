@@ -30,11 +30,23 @@ export async function dataApiRequest<T>({
     throw new Error('Missing EXPO_PUBLIC_NEON_DATA_API_URL');
   }
 
+  const TRUSTED_ORIGIN = 'https://darling.app';
   const headers: Record<string, string> = {
     Accept: 'application/json',
+    'origin': TRUSTED_ORIGIN,
+    'referer': `${TRUSTED_ORIGIN}/`,
+    'x-expo-origin': TRUSTED_ORIGIN,
   };
-  if (jwt) headers.Authorization = `Bearer ${jwt}`;
+  if (jwt) {
+    headers.Authorization = `Bearer ${jwt}`;
+  }
   if (body !== undefined) headers['Content-Type'] = 'application/json';
+  
+  // Debug log headers (masking JWT)
+  const debugHeaders = { ...headers };
+  if (debugHeaders.Authorization) debugHeaders.Authorization = 'Bearer [MASKED]';
+  console.log(`[DataAPI] ${method} ${path} Headers:`, JSON.stringify(debugHeaders));
+
   const preferParts: string[] = [];
   if (preferReturn) preferParts.push('return=representation');
   if (preferResolution) preferParts.push(`resolution=${preferResolution}`);
@@ -48,6 +60,7 @@ export async function dataApiRequest<T>({
 
   if (!res.ok) {
     const text = await res.text();
+    console.warn(`[DataAPI] ${method} ${path} failed (${res.status}):`, text);
     throw new Error(text || `Data API error (${res.status})`);
   }
 
