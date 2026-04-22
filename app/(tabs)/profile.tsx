@@ -36,12 +36,16 @@ import {
   listFavoriteMerchants,
   removeFavoriteMerchant,
   listSummonHistory,
+  listMyVideos,
   type Merchant,
   type UserProfile,
   type TasteNote as ApiTasteNote,
   type FavoriteMerchantRecord,
   type SummonHistoryRecord,
+  type FeedVideo,
 } from '@/lib/dataApi';
+import VideoGridItem from '@/components/video/VideoGridItem';
+import { Dimensions } from 'react-native';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const AVATAR_COLORS = ['#FF8C00', '#e95d4f', '#4a90d9', '#7c5cbf', '#2eaa6e', '#e07b39'];
@@ -109,6 +113,10 @@ export default function ProfilSayaScreen() {
   const [historyLoading, setHistoryLoading] = React.useState(false);
   const [showHistory, setShowHistory] = React.useState(false);
 
+  // Video stats
+  const [myVideos, setMyVideos] = React.useState<FeedVideo[]>([]);
+  const [videoCount, setVideoCount] = React.useState(0);
+
   // Animations
   const radarAnim = React.useRef(new Animated.Value(0)).current;
   const badgePulse = React.useRef(new Animated.Value(1)).current;
@@ -169,6 +177,13 @@ export default function ProfilSayaScreen() {
         setTasteNotes(notes);
         setFavorites(favs);
         setSummonHistory(history);
+        // If we want actual count, we might need a separate count query or just use the list length if small
+        // For now, let's assume we fetch a few more to show count if it's < 5
+        if (m) {
+           const videos = await listMyVideos(m.id, 50, jwt);
+           setMyVideos(videos);
+           setVideoCount(videos.length);
+        }
       } catch (err) {
         console.warn('Profile fetch error', err);
       }
@@ -390,9 +405,36 @@ export default function ProfilSayaScreen() {
                   icon={<FontAwesome name="dashboard" size={16} color="#fff5ed" />} 
                   onPress={() => router.push('/merchant/dashboard')}
                 />
-                <Pressable onPress={() => router.push('/(tabs)/studio')} style={({ pressed }) => [styles.secondaryBtn, { backgroundColor: colors.surfaceContainerLowest }, pressed && styles.pressed]}>
-                  <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Buka Studio (AI)</Text>
-                </Pressable>
+                <View style={styles.actionRowSmall}>
+                  <Pressable 
+                    onPress={() => router.push({ pathname: '/(tabs)/studio', params: { mode: 'merchant' } })} 
+                    style={({ pressed }) => [
+                      styles.secondaryBtnSmall, 
+                      { backgroundColor: colors.surfaceContainerLowest, flex: 1, overflow: 'hidden' }, 
+                      pressed && styles.pressed
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={[colors.primary + '15', 'transparent']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <FontAwesome name="video-camera" size={14} color={colors.primary} style={{ marginRight: 8 }} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={[styles.secondaryBtnTextSmall, { color: colors.primary }]}>Cerita Dagang</Text>
+                      {videoCount > 0 && (
+                        <View style={[styles.countBadge, { backgroundColor: colors.primary }]}>
+                          <Text style={styles.countBadgeText}>{videoCount}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </Pressable>
+                  <Pressable onPress={() => router.push('/(tabs)/studio')} style={({ pressed }) => [styles.secondaryBtnSmall, { backgroundColor: colors.surfaceContainerLowest, flex: 1 }, pressed && styles.pressed]}>
+                    <FontAwesome name="magic" size={14} color={colors.secondary} style={{ marginRight: 8 }} />
+                    <Text style={[styles.secondaryBtnTextSmall, { color: colors.primary }]}>Studio AI</Text>
+                  </Pressable>
+                </View>
               </View>
             ) : isUser ? (
               <View style={styles.heroActions}>
@@ -401,9 +443,43 @@ export default function ProfilSayaScreen() {
                   icon={<FontAwesome name="shopping-bag" size={16} color="#fff5ed" />} 
                   onPress={() => router.push('/merchant/register')}
                 />
-                <Pressable onPress={() => router.push('/(tabs)/studio')} style={({ pressed }) => [styles.secondaryBtn, { backgroundColor: colors.surfaceContainerLowest, marginTop: 4 }, pressed && styles.pressed]}>
-                  <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Mulai Kreasi Video (AI)</Text>
-                </Pressable>
+                <View style={styles.actionRowSmall}>
+                  <Pressable 
+                    onPress={() => router.push({ pathname: '/(tabs)/studio', params: { mode: 'merchant' } })} 
+                    style={({ pressed }) => [
+                      styles.secondaryBtnSmall, 
+                      { backgroundColor: colors.surfaceContainerLowest, flex: 1, overflow: 'hidden' }, 
+                      pressed && styles.pressed
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={[colors.primary + '15', 'transparent']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <FontAwesome name="video-camera" size={14} color={colors.primary} style={{ marginRight: 8 }} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={[styles.secondaryBtnTextSmall, { color: colors.primary }]}>Cerita Dagang</Text>
+                      {videoCount > 0 && (
+                        <View style={[styles.countBadge, { backgroundColor: colors.primary }]}>
+                          <Text style={styles.countBadgeText}>{videoCount}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </Pressable>
+                  <Pressable 
+                    onPress={() => router.push({ pathname: '/(tabs)/studio', params: { mode: 'merchant' } })} 
+                    style={({ pressed }) => [
+                      styles.secondaryBtnSmall, 
+                      { backgroundColor: colors.surfaceContainerLowest, flex: 1 }, 
+                      pressed && styles.pressed
+                    ]}
+                  >
+                    <FontAwesome name="magic" size={14} color={colors.secondary} style={{ marginRight: 8 }} />
+                    <Text style={[styles.secondaryBtnTextSmall, { color: colors.primary }]}>Studio AI</Text>
+                  </Pressable>
+                </View>
               </View>
             ) : null}
 
@@ -438,15 +514,31 @@ export default function ProfilSayaScreen() {
             </View>
 
             <View style={styles.storyGrid}>
-              <StoryCard uri="https://lh3.googleusercontent.com/aida-public/AB6AXuAg-_zuGHqtomkf4pngDXUini3huXEYjNxenr62Al4Qmc9UCnnHknfJwluE2t-PM2uh0AI844iQc3IqnrwSvEyeh9AKdZc5Sb02MYT6Nl89LHf-FBZCsbR3gxyGqsZOhETMRA6jK-fC8-BRAHwk-1KTHcbpjYrlZzPDnYsx5yznQ2nQuc78MXONOiyoHEzv96qUfOaq5bTyyFiS7nupZkwAFHgxgM29h4DsNWhGmpd8_k9ZjnntomeJj_Fs2mzhM7UL8faRY0YEAzEx" views="214" />
-              <StoryCard uri="https://lh3.googleusercontent.com/aida-public/AB6AXuD7WJ5WO7z4lZ6X9iNr-ZqUkymXag4L14R5_PlJ9vnk_bAPP0gVkYVZ9K_8svfI3sB-rTvowMB2PS4RzthrWGZcRFVdxr3NiDCjRFNDCJNNFC16U4-xGjMx8NMgl_UiaPGcYlutDbZSpv2hdVw0yA7Cf3ZsF0--ym9HSThuw6u3f3zBLFxRMyEUiYT_lcAgVmIFwiPzL3knEQmu0QodWG9LRkkNrYrx4FgMM6gIftjvMsBRwtYVAhTpzPr25HhtNREtHj4E-r2585x8" views="89" />
-              <StoryCard uri="https://lh3.googleusercontent.com/aida-public/AB6AXuDEfoqQVIraWhSv7bqJp22fhsy_4zsax4PSneOFXgzpElLJIEDjXad5jHWM07cS5ZrPUuERav5pNztk97V-8Eq22PQ4Xs2xB_3h0tCsEZCbDThP4T7DxazUkKVNmMNUC9xaFTCBD3WCcyOLxwZt8AWsJaUNwgBBx8-6oHdvL6vNyAdF2vBpe0HzftBs8nHFnvBcTx9kiafOIs6qfJagZ7DMfr2-ZcoXioJDiMeSTR8LYQRpIRjCXqHCY3Q-" views="150" />
-              <SurfaceCard style={styles.newStory}>
+              {myVideos.map(v => (
+                <VideoGridItem 
+                  key={v.id} 
+                  video={v} 
+                  onPress={(video) => router.push({ pathname: '/(tabs)', params: { initialVideoId: video.id } })}
+                  size={(Dimensions.get('window').width - 44) / 3}
+                />
+              ))}
+              <Pressable 
+                onPress={() => router.push({ pathname: '/(tabs)/studio', params: { mode: 'merchant' } })}
+                style={({ pressed }) => [
+                  styles.newStory, 
+                  { 
+                    backgroundColor: colors.surfaceContainerLow, 
+                    width: (Dimensions.get('window').width - 44) / 3,
+                    aspectRatio: 2/3 // Match VideoGridItem aspect ratio roughly
+                  }, 
+                  pressed && styles.pressed
+                ]}
+              >
                 <View style={styles.newStoryInner}>
-                  <FontAwesome name="plus-circle" size={34} color={colors.onSurfaceMuted} />
-                  <Text style={[styles.newStoryText, { color: colors.onSurfaceMuted }]}>Buat Cerita</Text>
+                  <FontAwesome name="plus-circle" size={24} color={colors.primary} />
+                  <Text style={[styles.newStoryText, { color: colors.primary }]}>Buat Cerita</Text>
                 </View>
-              </SurfaceCard>
+              </Pressable>
             </View>
           </>
         )}
@@ -945,8 +1037,13 @@ const styles = StyleSheet.create({
   badgeSub: { fontFamily: 'BeVietnamPro_400Regular', fontSize: 11 },
   chips: { marginTop: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   heroActions: { marginTop: 14, gap: 10 },
+  actionRowSmall: { flexDirection: 'row', gap: 10 },
   secondaryBtn: { borderRadius: 999, borderCurve: 'continuous', paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)' },
+  secondaryBtnSmall: { flexDirection: 'row', borderRadius: 999, borderCurve: 'continuous', paddingVertical: 8, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' },
   secondaryBtnText: { fontFamily: 'PlusJakartaSans_700Bold', fontSize: 14, letterSpacing: -0.14 },
+  secondaryBtnTextSmall: { fontFamily: 'PlusJakartaSans_700Bold', fontSize: 12, letterSpacing: -0.12 },
+  countBadge: { marginLeft: 6, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+  countBadgeText: { color: '#fff5ed', fontFamily: 'PlusJakartaSans_700Bold', fontSize: 10 },
 
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 4 },

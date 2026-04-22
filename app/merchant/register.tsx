@@ -10,6 +10,7 @@ import { createMerchant } from '@/lib/dataApi';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
@@ -112,17 +113,20 @@ export default function RegisterMerchantScreen() {
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [16, 9],
-      quality: 0.4,
-      base64: true,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.8,
+      });
 
-    if (!result.canceled) {
-      setCoverImage(result.assets[0].uri);
-      setCoverImageBase64(result.assets[0].base64 || null);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setCoverImage(result.assets[0].uri);
+      }
+    } catch (err) {
+      console.error('Error picking image:', err);
+      setError('Gagal memproses gambar dari galeri.');
     }
   };
 
@@ -137,18 +141,11 @@ export default function RegisterMerchantScreen() {
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [16, 9],
-        quality: 0.4,
-        base64: true,
+        quality: 0.8,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setCoverImage(result.assets[0].uri);
-        const b64 = result.assets[0].base64;
-        if (b64) {
-          setCoverImageBase64(b64);
-        } else {
-          setError('Gagal memproses data gambar dari kamera. Silakan coba gunakan Galeri.');
-        }
       }
     } catch (err) {
       setError('Gagal mengakses kamera: ' + (err instanceof Error ? err.message : 'Terjadi kesalahan'));
@@ -164,13 +161,27 @@ export default function RegisterMerchantScreen() {
       const jwt = (await auth.refreshJwt()) ?? auth.jwt;
       if (!jwt) throw new Error('JWT tidak ditemukan. Silakan login kembali.');
 
+      let finalCoverUrl = coverUrl.trim() || null;
+
+      // 1. If we have a local image, upload to Cloudinary
+      if (coverImage) {
+        try {
+          const cloudinaryRes = await uploadToCloudinary(coverImage, 'image');
+          finalCoverUrl = cloudinaryRes.secure_url;
+        } catch (uploadErr) {
+          console.error('Cloudinary upload err:', uploadErr);
+          throw new Error('Gagal mengunggah foto cover ke server media.');
+        }
+      }
+
+      // 2. Create merchant record in Neon DB
       const created = await createMerchant(jwt, {
         owner_user_id: auth.user.id,
         store_name: storeName.trim(),
         category: categories.length > 0 ? categories : null,
         description: description.trim() || null,
-        cover_image: coverImageBase64,
-        cover_url: coverUrl.trim() || null,
+        cover_image: null, // We use cover_url now
+        cover_url: finalCoverUrl,
         whatsapp_number: whatsapp.trim() || null,
         accepted_payments: payments.length > 0 ? payments : null,
         base_location: baseLocation.trim() || null,
@@ -183,7 +194,6 @@ export default function RegisterMerchantScreen() {
 
       if (!created) throw new Error('Gagal menyimpan profil pedagang.');
       
-      // Success, go back to profile
       router.back();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Terjadi kesalahan');

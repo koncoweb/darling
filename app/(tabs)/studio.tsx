@@ -1,9 +1,11 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link, useLocalSearchParams } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import React from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthContext } from '@/components/auth/AuthProvider';
@@ -12,6 +14,7 @@ import { TopAppBar, TopAppBarIconButton } from '@/components/ui/TopAppBar';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { createVideo, getMyMerchant, type Merchant } from '@/lib/dataApi';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 export default function StudioScreen() {
   const theme = useColorScheme() ?? 'light';
@@ -19,12 +22,19 @@ export default function StudioScreen() {
   const insets = useSafeAreaInsets();
   const auth = useAuthContext();
   const params = useLocalSearchParams<{ mode?: string; initialCaption?: string }>();
+  const router = useRouter();
   const [merchant, setMerchant] = React.useState<Merchant | null>(null);
-  const [videoUrl, setVideoUrl] = React.useState('');
+  const [videoUri, setVideoUri] = React.useState<string | null>(null);
   const [thumbUrl, setThumbUrl] = React.useState('');
   const [caption, setCaption] = React.useState(params.initialCaption || '');
   const [status, setStatus] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isProcessing, setIsProcessing] = React.useState(false);
+
+  const player = useVideoPlayer(videoUri || '', (player) => {
+    player.loop = true;
+    if (videoUri) player.play();
+  });
 
   React.useEffect(() => {
     if (!auth.user) {
@@ -44,28 +54,81 @@ export default function StudioScreen() {
     };
   }, [auth.jwt, auth.user]);
 
+  const pickVideo = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setVideoUri(result.assets[0].uri);
+    }
+  };
+
+  const recordVideo = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Izin Diperlukan', 'Izin kamera diperlukan untuk merekam video.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['videos'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setVideoUri(result.assets[0].uri);
+    }
+  };
+
   async function handleCreateVideo() {
-    if (!merchant) return;
+    if (!merchant || !videoUri) return;
     setStatus(null);
     setIsSubmitting(true);
     try {
       const jwt = (await auth.refreshJwt()) ?? auth.jwt;
       if (!jwt) throw new Error('JWT belum tersedia. Silakan coba lagi.');
+
+      // 1. Upload to Cloudinary
+      setIsProcessing(true);
+      setStatus('Uploading to Cloudinary...');
+      
+      const cloudinaryRes = await uploadToCloudinary(videoUri, 'video');
+      
+      setIsProcessing(false);
+      setStatus('Saving to database...');
+
+      // 2. Save URL to Neon DB
       const created = await createVideo(jwt, {
         merchant_id: merchant.id,
-        video_url: videoUrl.trim(),
+        video_url: cloudinaryRes.secure_url,
         thumbnail_url: thumbUrl.trim().length ? thumbUrl.trim() : null,
         caption: caption.trim().length ? caption.trim() : null,
       });
-      if (!created) throw new Error('Gagal publish video');
-      setStatus('Publish berhasil. Video sudah masuk ke feed.');
-      setVideoUrl('');
+
+      if (!created) throw new Error('Gagal publish video ke database');
+      
+      Alert.alert('Sukses', 'Video Anda telah berhasil di-publish!');
+      
+      setVideoUri(null);
       setThumbUrl('');
       setCaption('');
+      setStatus(null);
+
+      // Auto-navigate back to dashboard if in merchant mode
+      if (params.mode === 'merchant') {
+        setTimeout(() => {
+          router.push('/merchant/dashboard');
+        }, 1500);
+      }
     } catch (e) {
+      console.error('Upload flow error:', e);
       setStatus(e instanceof Error ? e.message : 'Gagal publish');
     } finally {
       setIsSubmitting(false);
+      setIsProcessing(false);
     }
   }
 
@@ -118,17 +181,37 @@ export default function StudioScreen() {
               {merchant.store_name}
             </Text>
 
-            <Text style={[styles.inputLabel, { color: colors.text }]}>Video URL</Text>
-            <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerLow }]}>
-              <TextInput
-                value={videoUrl}
-                onChangeText={setVideoUrl}
-                placeholder="https://..."
-                placeholderTextColor={colors.outlineVariant}
-                autoCapitalize="none"
-                style={[styles.input, { color: colors.text }]}
-              />
-            </View>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Video Content</Text>
+            {videoUri ? (
+              <View style={styles.previewContainer}>
+                <VideoView 
+                  player={player} 
+                  style={styles.previewVideo} 
+                  allowsFullscreen 
+                  allowsPictureInPicture 
+                />
+                <Pressable onPress={() => setVideoUri(null)} style={styles.removeVideoBtn}>
+                  <FontAwesome name="times-circle" size={24} color="#ff4444" />
+                </Pressable>
+              </View>
+            ) : (
+              <View style={styles.pickerRow}>
+                <Pressable 
+                  onPress={pickVideo}
+                  style={[styles.videoPicker, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, flex: 1 }]}>
+                  <FontAwesome name="cloud-upload" size={32} color={colors.primary} />
+                  <Text style={[styles.videoPickerText, { color: colors.onSurfaceMuted }]}>Pilih Galeri</Text>
+                  <Text style={[styles.videoPickerSubtext, { color: colors.onSurfaceMuted }]}>Maks 10MB</Text>
+                </Pressable>
+                <Pressable 
+                  onPress={recordVideo}
+                  style={[styles.videoPicker, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, flex: 1 }]}>
+                  <FontAwesome name="camera" size={32} color={colors.secondary} />
+                  <Text style={[styles.videoPickerText, { color: colors.onSurfaceMuted }]}>Rekam Video</Text>
+                  <Text style={[styles.videoPickerSubtext, { color: colors.onSurfaceMuted }]}>Gunakan AI</Text>
+                </Pressable>
+              </View>
+            )}
 
             <Text style={[styles.inputLabel, { color: colors.text }]}>Thumbnail URL (opsional)</Text>
             <View style={[styles.inputWrap, { backgroundColor: colors.surfaceContainerLow }]}>
@@ -157,15 +240,21 @@ export default function StudioScreen() {
 
             <Pressable
               onPress={handleCreateVideo}
-              disabled={isSubmitting || videoUrl.trim().length < 8}
-              style={({ pressed }) => [pressed && styles.pressed, (isSubmitting || videoUrl.trim().length < 8) && styles.disabled]}>
+              disabled={isSubmitting || !videoUri}
+              style={({ pressed }) => [pressed && styles.pressed, (isSubmitting || !videoUri) && styles.disabled]}>
               <LinearGradient
                 colors={[colors.primary, 'rgba(255, 140, 0, 0.75)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.publishNowBtn}>
-                <Text style={styles.publishNowText}>{isSubmitting ? 'Memproses...' : 'Publish ke Feed'}</Text>
-                <FontAwesome name="send" size={18} color="#fff5ed" />
+                <Text style={styles.publishNowText}>
+                  {isProcessing ? 'Mengonversi...' : isSubmitting ? 'Memproses...' : 'Publish ke Feed'}
+                </Text>
+                {isProcessing || isSubmitting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <FontAwesome name="send" size={18} color="#fff5ed" />
+                )}
               </LinearGradient>
             </Pressable>
           </SurfaceCard>
@@ -298,6 +387,46 @@ const styles = StyleSheet.create({
     fontFamily: 'BeVietnamPro_400Regular',
     fontSize: 12,
     lineHeight: 16,
+  },
+  videoPicker: {
+    height: 140,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  videoPickerText: {
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontSize: 14,
+  },
+  videoPickerSubtext: {
+    fontFamily: 'BeVietnamPro_400Regular',
+    fontSize: 11,
+  },
+  previewContainer: {
+    height: 300,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 16,
+    position: 'relative',
+  },
+  previewVideo: {
+    flex: 1,
+  },
+  removeVideoBtn: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
   },
   authRow: {
     flexDirection: 'row',

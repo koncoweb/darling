@@ -14,6 +14,7 @@ Versi awal (MVP) akan difokuskan pada platform **Android Native** yang dibangun 
 - **Frontend / Mobile Framework:** Expo (React Native) untuk Android Native.
 - **Database:** Neon DB (Serverless Postgres).
 - **Authentication:** Neon Auth.
+- **Media Storage:** Cloudinary (Media Hosting untuk video & gambar, bypassing Neon Data API 10MB limit).
 - **Styling / UI Library:** NativeWind (Tailwind CSS untuk React Native) atau custom stylesheet yang mematuhi Design System "The Kinetic Hearth".
 - **Maps / Geolocation:** React Native Maps (Google Maps API untuk Android).
 - **Video Player:** Expo Video (untuk memutar video feed seperti TikTok/Reels).

@@ -109,3 +109,21 @@ Format log mendaftar modifikasi fitur diurutkan berdasarkan kegiatan (secara kro
 | **Navigasi Tombol Macet** | Masalah: Tombol "Dasbor Pedagang" dibungkus `Pressable` di luar `GradientCtaButton`. <br>Solusi: Gunakan properti `onPress` bawaan dari komponen kustom untuk menghindari konflik *event handler*. |
 | **Data Out-of-Sync** | Masalah: Status merchant tidak terupdate saat kembali dari Dashboard ke Profile. <br>Solusi: Menggunakan `useFocusEffect` dari `@react-navigation/native` daripada `useEffect` standar untuk trigger ulang pengambilan data setiap kali layar difokuskan. |
 | **Konfigurasi Route** | Masalah: Error navigasi saat rute baru ditambahkan. <br>Solusi: Pastikan file `app/_layout.tsx` telah mendaftarkan folder/file baru dalam struktur `Stack`. |
+### [11:15 - 12:00 WIB] Migrasi Media ke Cloudinary & Perbaikan Keamanan RLS
+- **Added**: Modul `lib/cloudinary.ts` untuk menangani *Unsigned Uploads* langsung dari perangkat ke Cloudinary, mem-bypass limit 10MB pada Neon Data API.
+- **Changed**: Menghentikan penggunaan Base64 untuk penyimpanan video dan gambar. Semua media kini disimpan sebagai URL Cloudinary di database.
+- **Changed**: Refactor `app/(tabs)/studio.tsx` untuk mengunggah video langsung ke Cloudinary sebelum menyimpan metadata ke database. Ditambahkan indikator progres "Uploading to Cloudinary...".
+- **Changed**: Refactor `app/merchant/register.tsx` untuk mengunggah foto profil pedagang ke Cloudinary. 
+- **Fixed**: Mengatasi error `42501` (RLS Policy Violation) pada tabel `videos`.
+- **Improved**: Migrasi kebijakan RLS dari `auth.user_id()::uuid` ke `auth.uid()` yang lebih robust dan asli untuk Neon Auth.
+- **Improved**: Penguatan keamanan pada tabel `merchants` dan `menu_items` dengan kebijakan kepemilikan yang lebih ketat menggunakan `auth.uid()`.
+
+### Ringkasan Pelajaran Teknis (Sesi Cloudinary & RLS)
+
+| Kendala / Masalah | Solusi & Pembelajaran |
+|---|---|
+| **Request Too Large (10MB)** | Masalah: Neon Data API memiliki limit payload 10MB, menyebabkan kegagalan saat upload video Base64. <br>Solusi: Gunakan Cloudinary sebagai *media hosting* eksternal. Upload dilakukan langsung dari client menggunakan *Unsigned Preset*. |
+| **RLS Error 42501** | Masalah: Gagal insert ke tabel `videos` karena kebijakan RLS tidak mengenali user. <br>Solusi: Ganti `auth.user_id()` dengan `auth.uid()`. <br>Pelajaran: Pada PostgreSQL 17 dengan Neon Auth, `auth.uid()` adalah fungsi bawaan yang paling tepat untuk mengambil UUID user dari JWT. |
+| **Keamanan Merchants** | Masalah: Tabel `merchants` sebelumnya memiliki *write policy* yang terlalu terbuka (`qual: true`). <br>Solusi: Terapkan pengecekan `owner_user_id = auth.uid()` di level database untuk mencegah manipulasi data oleh user lain. |
+
+---

@@ -116,3 +116,19 @@ import '@/lib/polyfills/fetch';   // 2. Fetch interceptor (fallback tambahan)
 | `crypto is not defined` | Web Crypto API tidak tersedia di Hermes engine | Import `lib/polyfills/crypto` di `_layout.tsx` baris pertama |
 | `User already exists` | Email sudah terdaftar di Neon Auth | Tampilkan pesan error dari `result.error.message` |
 
+
+---
+
+## 8. Manajemen Media & Cloudinary
+
+Untuk menangani file video yang besar (>10MB), aplikasi menggunakan Cloudinary sebagai media provider.
+
+### Alur Kerja Upload:
+1. **Selection:** User memilih video/gambar menggunakan \ImagePicker\.
+2. **Binary Upload:** Klien mengirim data binary langsung ke Cloudinary \upload\ endpoint menggunakan *Unsigned Upload Preset*.
+3. **Optimasi:** Cloudinary secara otomatis melakukan kompresi dan optimasi format.
+4. **Metadata Persistence:** Klien menerima URL hasil upload, lalu mengirim URL tersebut ke Neon DB via Data API untuk disimpan sebagai record.
+
+### Keuntungan UI/UX:
+- **Progress Tracking:** Frontend dapat memberikan feedback visual (loading indicator/status) selama proses upload yang memakan waktu.
+- **Fail-safe:** Jika upload media gagal, transaksi ke database tidak dilakukan, mencegah data *corrupt*.

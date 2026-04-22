@@ -12,9 +12,9 @@ Karena kita tidak memiliki API perantara yang memeriksa izin sebelum menjalankan
 
 *   **Neon Authorize:** Saat *client* membuat sesi (koneksi) dengan database, aplikasi menyelipkan token JWT dari Neon Auth. Postgres akan mengurai token ini (via parameter khusus yang di-set di koneksi atau sesi *transaction*) menjadi variabel seperti `current_setting('request.jwt.claims')::json->>'sub'` yang mewakili ID Pengguna (User ID).
 *   **Kebijakan (Policy) Wajib:**
-    1.  **Users:** Seseorang hanya dapat `SELECT` dan `UPDATE` pada *row* di mana `id = user_id_dari_jwt`.
-    2.  **Merchants:** Seseorang hanya dapat `INSERT`, `UPDATE`, `DELETE` jika `user_id` pada *row* tersebut adalah miliknya.
-    3.  **Videos (Public Read):** Semua *role* (bahkan *anonymous*) diizinkan untuk `SELECT` tabel *videos* agar fitur *feed* berjalan, namun hanya pemilik yang dapat `INSERT` atau `DELETE`.
+    1.  **Users:** Seseorang hanya dapat `SELECT` dan `UPDATE` pada *row* di mana `id = auth.uid()`.
+    2.  **Merchants:** Seseorang hanya dapat `INSERT`, `UPDATE`, `DELETE` jika `user_id = auth.uid()`.
+    3.  **Videos (Public Read):** Semua *role* (bahkan *anonymous*) diizinkan untuk `SELECT` tabel *videos* agar fitur *feed* berjalan, namun hanya pemilik yang dapat `INSERT` atau `DELETE` (verifikasi via `auth.uid()`).
 
 ## 3. Strategi Lingkungan (Environment Strategy): Neon Branching
 Fitur **Branching** Neon (*Copy-on-Write*) adalah fondasi kerja tim.
@@ -47,7 +47,8 @@ Fitur **Branching** Neon (*Copy-on-Write*) adalah fondasi kerja tim.
 *   `embedding`: Vector (Ekstensi **`pgvector`**).
 *   **Aturan RLS:** 
     *   `CREATE POLICY "Public can read videos" ON videos FOR SELECT USING (true);`
-    *   `CREATE POLICY "Merchant can insert videos" ON videos FOR INSERT WITH CHECK (merchant_id IN (SELECT id FROM merchants WHERE user_id = current_setting('app.user_id')::uuid));`
+    *   `CREATE POLICY "Merchant can insert videos" ON videos FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);`
+    *   *Note:* `video_url` sekarang menyimpan URL dari **Cloudinary** untuk menghindari limit payload 10MB pada Neon Data API.
 
 ## 5. Alur Migrasi & Manajemen Skema (Local Execution)
 Meskipun aplikasi berjalan tanpa *backend*, perubahan skema (*migration*) **TIDAK PERNAH** dijalankan dari aplikasi klien. Skema hanya diubah oleh pengembang dari terminal laptop mereka.

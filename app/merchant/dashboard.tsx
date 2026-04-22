@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import {
     ActivityIndicator,
+    Image,
     Pressable,
     RefreshControl,
     ScrollView,
@@ -29,6 +30,7 @@ import {
     type SummonHistoryRecord,
     type FeedVideo,
 } from '@/lib/dataApi';
+import VideoGridItem from '@/components/video/VideoGridItem';
 
 export default function MerchantDashboardScreen() {
     const theme = useColorScheme() ?? 'light';
@@ -72,7 +74,7 @@ export default function MerchantDashboardScreen() {
         if (!merchant) return;
         try {
             const nextStatus = !merchant.is_active;
-            const updated = await updateMerchant(auth.jwt, merchant.id, { is_active: nextStatus });
+            const updated = await updateMerchant(auth.jwt || '', merchant.id, { is_active: nextStatus });
             if (updated) setMerchant(updated);
         } catch (e) {
             console.error(e);
@@ -81,7 +83,7 @@ export default function MerchantDashboardScreen() {
 
     const handleUpdateSummonStatus = async (summonId: string, status: 'arrived' | 'cancelled') => {
         try {
-            const updated = await updateSummonStatus(auth.jwt, summonId, status);
+            const updated = await updateSummonStatus(auth.jwt || '', summonId, status);
             if (updated) {
                 setSummons(prev => prev.filter(s => s.id !== summonId));
             }
@@ -103,7 +105,11 @@ export default function MerchantDashboardScreen() {
             <StatusBar style="auto" />
             <TopAppBar
                 title="Dasbor Pedagang"
-                left={<TopAppBarIconButton icon="arrow-left" onPress={() => router.back()} />}
+                left={
+                    <TopAppBarIconButton onPress={() => router.back()}>
+                        <FontAwesome name="arrow-left" size={20} color={colors.primary} />
+                    </TopAppBarIconButton>
+                }
             />
 
             <ScrollView
@@ -209,18 +215,12 @@ export default function MerchantDashboardScreen() {
                 ) : (
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.videoScroll}>
                         {myVideos.map(v => (
-                            <View key={v.id} style={styles.videoItem}>
-                                <View style={[styles.videoThumb, { backgroundColor: colors.surfaceContainerHigh }]}>
-                                    {v.thumbnail_url ? (
-                                        <Text style={{ fontSize: 10 }}>[Thumbnail]</Text>
-                                    ) : (
-                                        <FontAwesome name="play-circle" size={24} color={colors.outlineVariant} />
-                                    )}
-                                </View>
-                                <Text style={[styles.videoCaption, { color: colors.text }]} numberOfLines={1}>
-                                    {v.caption || 'Tanpa caption'}
-                                </Text>
-                            </View>
+                            <VideoGridItem 
+                                key={v.id} 
+                                video={v} 
+                                onPress={(video) => router.push({ pathname: '/(tabs)', params: { initialVideoId: video.id } })}
+                                size={120}
+                            />
                         ))}
                     </ScrollView>
                 )}
@@ -323,16 +323,6 @@ const styles = StyleSheet.create({
     },
     promptText: { fontFamily: 'BeVietnamPro_500Medium', fontSize: 13 },
     videoScroll: { gap: 12, paddingVertical: 10 },
-    videoItem: { width: 120, gap: 6 },
-    videoThumb: { 
-        width: 120, 
-        height: 160, 
-        borderRadius: 16, 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        overflow: 'hidden'
-    },
-    videoCaption: { fontFamily: 'BeVietnamPro_400Regular', fontSize: 11, paddingHorizontal: 4 },
     emptyStudioCard: { padding: 32, alignItems: 'center', gap: 12 },
     emptyStudioText: { fontFamily: 'BeVietnamPro_400Regular', fontSize: 12, textAlign: 'center', opacity: 0.7 },
     createStoryBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, marginTop: 4 },

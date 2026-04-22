@@ -36,7 +36,9 @@ Tantangan terbesar dari koneksi langsung ke DB adalah keamanan. Jika kita meleta
 ## 5. Manajemen File (Storage)
 Karena tidak ada *backend* untuk menerbitkan *Pre-signed URL* yang aman untuk mengunggah video, kita memiliki dua opsi klien-sentris:
 1.  **Penyedia Storage Serverless (Supabase Storage / Firebase Storage):** Meskipun database memakai Neon, kita bisa mengandalkan layanan storage *serverless* pihak ketiga yang juga memiliki sistem *Security Rules* (RLS) bawaan untuk menangani unggahan langsung dari klien Android.
-2.  **Upload Langsung dengan Batasan (Direct Cloudinary):** Menggunakan API *unsigned upload* dari Cloudinary dengan batasan (*preset*) ketat (misalnya maksimal ukuran video 50MB, otomatis dikompresi). Setelah video terunggah dan klien mendapat URL-nya, klien menyimpannya ke Neon DB. Opsi ke-2 ini lebih mudah untuk MVP.
+2.  **Upload Langsung (Direct Cloudinary - Dipilih):** Menggunakan API *unsigned upload* dari Cloudinary. Ini adalah standar industri untuk mengatasi batasan payload pada database serverless (Neon Data API memiliki limit 10MB).
+    *   **Keuntungan:** Mengurangi beban database, menghemat bandwidth DB, dan mendukung file video besar.
+    *   **Implementasi:** Menggunakan `FormData` untuk mengirim file binary langsung ke endpoint Cloudinary dari aplikasi Expo.
 
 
 ---
@@ -136,3 +138,28 @@ Untuk mendukung profil pedagang yang lebih informatif, sistem kategori pada tabe
 3. **Kompatibilitas Tipe:** Driver Drizzle ORM atau interaksi via SDK mendukung konversi otomatis array string di PostgreSQL (`text[]`) menjadi array objek di Typescript (`string[]`). 
 
 Pada UI aplikasi (misalnya saat pendafataran pedagang), input tipe string biasa diubah menjadi *multi-select chips* sehingga input lebih seragam dan bebas *typo*. Format array ini kemudian digabungkan dengan fungsi bawaan `.join(', ')` di bagian frontend untuk keperluan presentasi UI di Profil Merchant dan Eksplorasi.
+
+---
+
+## 8. Keamanan & Row-Level Security (RLS) Hardening
+
+Untuk memastikan integritas data dan kepemilikan yang sah, kita menerapkan kebijakan RLS yang ketat pada tabel-tabel utama:
+
+### Integrasi Neon Auth (`auth.uid()`)
+Kita menggunakan fungsi bawaan `auth.uid()` dari Neon Auth untuk mengidentifikasi pengguna yang terautentikasi. Ini jauh lebih aman dan reliabel dibandingkan melempar `user_id` secara manual dari frontend.
+
+### Kebijakan Tabel Utama:
+1.  **Tabel `videos`**:
+    *   `SELECT`: Terbuka untuk umum (`PUBLIC`).
+    *   `INSERT/UPDATE/DELETE`: Hanya diizinkan jika `merchant_id` (diambil dari profil user) cocok dengan `auth.uid()`.
+2.  **Tabel `merchants`**:
+    *   `INSERT`: Hanya untuk user yang belum memiliki merchant profile.
+    *   `UPDATE`: Hanya pemilik merchant (`user_id = auth.uid()`).
+3.  **Tabel `menu_items`**:
+    *   `ALL`: Hanya pemilik merchant yang menaungi menu tersebut yang boleh melakukan modifikasi.
+
+### Troubleshooting RLS:
+Jika muncul error `42501 (Permission Denied)`, pastikan:
+1. Header `Authorization: Bearer <JWT>` dikirim dengan benar.
+2. Kebijakan RLS menggunakan `auth.uid()` bukan `auth.user_id()::uuid` (yang mungkin tidak terdefinisi di session tertentu).
+3. Tabel tidak sedang dalam mode `FORCE RLS` tanpa kebijakan yang valid.
