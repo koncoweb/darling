@@ -18,11 +18,17 @@ const internal =
             'x-expo-origin': TRUSTED_ORIGIN,
           },
           onRequest: (ctx: any) => {
-            // Ensure headers are always present regardless of request type
+            // Ensure headers are always present regardless of request type (Headers object or plan object)
             if (ctx.headers) {
-              ctx.headers.set('origin', TRUSTED_ORIGIN);
-              ctx.headers.set('referer', `${TRUSTED_ORIGIN}/`);
-              ctx.headers.set('x-expo-origin', TRUSTED_ORIGIN);
+              if (typeof ctx.headers.set === 'function') {
+                ctx.headers.set('origin', TRUSTED_ORIGIN);
+                ctx.headers.set('referer', `${TRUSTED_ORIGIN}/`);
+                ctx.headers.set('x-expo-origin', TRUSTED_ORIGIN);
+              } else {
+                ctx.headers['origin'] = TRUSTED_ORIGIN;
+                ctx.headers['referer'] = `${TRUSTED_ORIGIN}/`;
+                ctx.headers['x-expo-origin'] = TRUSTED_ORIGIN;
+              }
             }
             return ctx;
           },

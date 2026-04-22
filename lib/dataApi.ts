@@ -120,7 +120,14 @@ export async function listFeedVideos(limit = 10, jwt?: string | null) {
   );
   params.set('order', 'created_at.desc');
   params.set('limit', String(limit));
-  return dataApiRequest<FeedVideo[]>({ path: `/videos?${params.toString()}`, jwt });
+  try {
+    return await dataApiRequest<FeedVideo[]>({ path: `/videos?${params.toString()}`, jwt });
+  } catch (error) {
+    if (jwt) {
+      return dataApiRequest<FeedVideo[]>({ path: `/videos?${params.toString()}`, jwt: null });
+    }
+    throw error;
+  }
 }
 
 export async function listMyVideos(merchantId: string, limit = 5, jwt?: string | null) {
@@ -138,7 +145,16 @@ export async function listMyVideos(merchantId: string, limit = 5, jwt?: string |
   params.set('merchant_id', `eq.${merchantId}`);
   params.set('order', 'created_at.desc');
   params.set('limit', String(limit));
-  return dataApiRequest<FeedVideo[]>({ path: `/videos?${params.toString()}`, jwt });
+  
+  try {
+    return await dataApiRequest<FeedVideo[]>({ path: `/videos?${params.toString()}`, jwt });
+  } catch (error) {
+    // Falls back to anonymous fetch if authenticated fetch fails (e.g. invalid JWT)
+    if (jwt) {
+      return dataApiRequest<FeedVideo[]>({ path: `/videos?${params.toString()}`, jwt: null });
+    }
+    throw error;
+  }
 }
 
 export type Merchant = {
@@ -220,11 +236,24 @@ export async function getMyMerchant(ownerUserId: string, jwt?: string | null) {
   );
   params.set('owner_user_id', `eq.${ownerUserId}`);
   params.set('limit', '1');
-  const items = await dataApiRequest<Merchant[]>({
-    path: `/merchants?${params.toString()}`,
-    jwt,
-  });
-  return items[0] ?? null;
+  
+  try {
+    const items = await dataApiRequest<Merchant[]>({
+      path: `/merchants?${params.toString()}`,
+      jwt,
+    });
+    return items[0] ?? null;
+  } catch (error) {
+    if (jwt) {
+      // Retry without JWT if auth fails
+      const items = await dataApiRequest<Merchant[]>({
+        path: `/merchants?${params.toString()}`,
+        jwt: null,
+      });
+      return items[0] ?? null;
+    }
+    throw error;
+  }
 }
 
 export async function createMerchant(
@@ -545,6 +574,17 @@ export async function listSummonHistory(userId: string, limit = 10, jwt?: string
   const params = new URLSearchParams();
   params.set('user_id', `eq.${userId}`);
   params.set('select', 'id,user_id,merchant_id,status,summoned_at,arrived_at,duration_seconds,note,merchants(store_name,category,avatar_url)');
+  params.set('order', 'summoned_at.desc');
+  params.set('limit', String(limit));
+  return dataApiRequest<SummonHistoryRecord[]>({ path: `/summon_history?${params.toString()}`, jwt });
+}
+
+export async function listMerchantSummons(merchantId: string, limit = 10, jwt?: string | null): Promise<SummonHistoryRecord[]> {
+  const params = new URLSearchParams();
+  params.set('merchant_id', `eq.${merchantId}`);
+  params.set('select', 'id,user_id,merchant_id,status,summoned_at,arrived_at,duration_seconds,note,merchants(store_name,category,avatar_url)');
+  // Filter for active/recent calls
+  params.set('status', 'in.(pending,arrived)');
   params.set('order', 'summoned_at.desc');
   params.set('limit', String(limit));
   return dataApiRequest<SummonHistoryRecord[]>({ path: `/summon_history?${params.toString()}`, jwt });

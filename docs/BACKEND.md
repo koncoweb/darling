@@ -96,6 +96,33 @@ Di **Neon Console â†’ Auth Settings â†’ Allowed Domains**, pastikan:
 - Nilai ini harus **persis sama** dengan nilai `origin` header yang dikirim aplikasi (case-sensitive)
 - Untuk Expo Go (development), origin tetap menggunakan domain production karena diinjeksi secara manual oleh kode â€” bukan oleh sistem
 
+### 7. API Layanan & Sinkronisasi Data (Merchant)
+
+Untuk mendukung operasional pedagang yang responsif, aplikasi menggunakan fungsi khusus di `lib/dataApi.ts` yang dioptimalkan untuk performa native.
+
+#### listMerchantSummons
+Fungsi ini digunakan untuk mengambil data panggilan/summon dari pelanggan yang ditujukan khusus untuk pedagang yang sedang login.
+- **Endpoint**: `https://geopost.neon.tech/summons` (via Data API).
+- **Filter**: Dilakukan di sisi database menggunakan RLS atau parameter query yang membatasi hasil hanya untuk `merchant_id` yang sesuai dengan sub-JWT.
+- **Resilience**: Menggunakan `dataApiRequest` dengan *silent fallback* untuk memastikan data tetap bisa ditarik meskipun ada fluktuasi pada state autentikasi klien.
+
+#### Strategi Sinkronisasi Layar (Screen Sync)
+Karena aplikasi menggunakan **2-Tier Architecture**, sinkronisasi data antar layar (misal: dari Form Edit kembali ke Profil, atau dari Beranda ke Dasbor) dilakukan di sisi klien menggunakan:
+1.  **`useFocusEffect`**: Memastikan pengambilan data ulang (*re-fetching*) setiap kali layar mendapatkan fokus kembali. Ini sangat krusial untuk data dinamis seperti status panggilan pelanggan.
+2.  **State Guard (`merchantLoading`)**: Mencegah *UI Flickering* dengan menunda rendering komponen spesifik (seperti menu pedagang di profil) sampai status `merchant` terkonfirmasi dari database.
+
+---
+
+## 8. Troubleshooting & Penanganan Error Umum
+
+Dokumentasi ini mencatat temuan teknis penting selama pengembangan untuk referensi masa depan.
+
+| Masalah | Penyebab | Solusi |
+|---|---|---|
+| `Response.json is not a function` | Terjadi saat menggunakan global polyfill fetch di React Native/Expo. Polyfill membungkus objek `Response` asli sehingga method internalnya hilang. | **Hindari global polyfill**. Injeksi header (`Origin`, `Referer`) harus dilakukan langsung pada konfigurasi adapter library (misal: `fetchOptions` di Neon Auth). |
+| "Unexpected end of JSON input" | Terjadi saat mencoba mem-parsing JSON dari respon kosong (misal: status 204 No Content). | Selalu periksa `response.status === 204` sebelum memanggil `.json()`. |
+| Gagal Fetch di Expo Go | Neon Auth menolak request tanpa `Origin`. | Injeksi manual `origin: https://darling.app` pada inisialisasi client auth. |
+
 ### Alur Autentikasi yang Telah Divalidasi
 
 ```
@@ -163,3 +190,24 @@ Jika muncul error `42501 (Permission Denied)`, pastikan:
 1. Header `Authorization: Bearer <JWT>` dikirim dengan benar.
 2. Kebijakan RLS menggunakan `auth.uid()` bukan `auth.user_id()::uuid` (yang mungkin tidak terdefinisi di session tertentu).
 3. Tabel tidak sedang dalam mode `FORCE RLS` tanpa kebijakan yang valid.
+
+---
+
+## 9. Sinkronisasi Media & Video Feed
+
+Aplikasi menggunakan pendekatan **Hybrid Media Storage** (Metadata di Neon, File di Cloudinary).
+
+### Alur Kerja Video:
+1.  **Upload**: Klien mengunggah langsung ke Cloudinary menggunakan *unsigned presets*.
+2.  **Metadata**: Setelah sukses, URL video dan `public_id` disimpan ke tabel `videos` di Neon DB.
+3.  **Display**: Saat menampilkan feed, aplikasi menggunakan Cloudinary SDK/URL transformation untuk menghasilkan thumbnail secara instan (`f_auto, q_auto, so_auto`).
+
+### Penanganan JWT Error pada Feed:
+Pada halaman Beranda (`(tabs)/index.tsx`), terdapat risiko error jika JWT kedaluwarsa atau belum terinisialisasi saat `listFeedVideos` dipanggil. 
+
+**Solusi Premium:**
+- Implementasikan blok `try-catch` yang mendeteksi error `401 Unauthorized` atau string "JWT" pada pesan error.
+- Jika terdeteksi, lakukan pemanggilan ulang (retry) tanpa menyertakan JWT (`null`).
+- Ini memastikan pengguna "Tamu" atau pengguna dengan sesi kedaluwarsa tetap bisa melihat konten publik tanpa terhenti oleh layar error/blank.
+
+---

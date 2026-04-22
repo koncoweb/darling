@@ -32,6 +32,7 @@ Mengacu pada `DESIGN.md` dan prototipe desain yang sudah ada:
   - *Headlines:* Plus Jakarta Sans (Rapat, modern).
   - *Body/Labels:* Be Vietnam Pro (Tingkat keterbacaan tinggi).
 - **Efek Visual:** *Glassmorphism* (Backdrop blur) untuk Bottom Navigation dan Header, serta *Tonal Layering* (bukan drop shadow pekat) untuk kedalaman.
+- **No-Overlap Content Strategy:** Karena Bottom Navigation menggunakan `position: 'absolute'` (transparan/blur), seluruh konten layar penuh (seperti Video Feed) wajib memiliki *safe-area padding* bawah yang dinamis (Insects + Tab Bar Height + Buffer) agar elemen interaktif (detail pedagang, tombol beli) tidak tertutup navigasi.
 
 ## 5. Fitur Utama & Struktur Navigasi (Bottom Navigation Bar)
 
@@ -69,4 +70,14 @@ Mengacu pada `DESIGN.md` dan prototipe desain yang sudah ada:
 - Proses login/registrasi lancar via Neon Auth.
 - Pengguna dapat menggulir (scroll) minimal 5 video tanpa *crash*.
 - Peta dapat menampilkan minimal *dummy data* lokasi pedagang dengan akurasi yang baik.
-- Pedagang dapat mengunggah satu video menu melalui Studio AI.
+- Pedagang dapat mengunggah video menu melalui Studio AI (Cloudinary Integration).
+
+---
+
+## 8. Status Implementasi (April 2026)
+- [x] **Core Auth**: Terintegrasi via Neon Auth (Hydration, Session Management).
+- [x] **Video Feed**: Implementasi TikTok-style vertikal scroll dengan paging sukses.
+- [x] **Merchant Dashboard**: CRUD profil pedagang & integrasi upload video sukses.
+- [x] **UI Polish**: Solusi *safe-area* untuk floating tab bar diimplementasi di `VideoFeedItem`.
+- [/] **Peta Pedagang**: (In Progress) Peta basic berfungsi, perlu penajaman geolokasi real-time.
+- [ ] **AI Studio**: (Planned) Integrasi saran caption berbasis AI.

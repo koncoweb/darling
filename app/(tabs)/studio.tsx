@@ -123,9 +123,16 @@ export default function StudioScreen() {
           router.push('/merchant/dashboard');
         }, 1500);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('Upload flow error:', e);
-      setStatus(e instanceof Error ? e.message : 'Gagal publish');
+      let errorMsg = 'Gagal publish';
+      if (e.message?.includes('42501') || e.message?.includes('RLS')) {
+        errorMsg = 'Error Izin (RLS): Anda tidak memiliki akses ke merchant ini atau sesi kadaluarsa.';
+      } else if (e.message) {
+        errorMsg = e.message;
+      }
+      setStatus(errorMsg);
+      Alert.alert('Gagal Publish', errorMsg);
     } finally {
       setIsSubmitting(false);
       setIsProcessing(false);

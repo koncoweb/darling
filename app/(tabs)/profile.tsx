@@ -7,6 +7,7 @@ import { Link, useRouter, useFocusEffect } from 'expo-router';
 import React from 'react';
 import { Image } from 'expo-image';
 import {
+    ActivityIndicator,
     Alert,
     Animated,
     Platform,
@@ -85,7 +86,7 @@ export default function ProfilSayaScreen() {
 
   // Merchant state
   const [merchant, setMerchant] = React.useState<Merchant | null>(null);
-  const [merchantLoading, setMerchantLoading] = React.useState(false);
+  const [merchantLoading, setMerchantLoading] = React.useState(!!auth.user);
   const [merchantError, setMerchantError] = React.useState<string | null>(null);
 
   // User preferences (from DB)
@@ -177,15 +178,10 @@ export default function ProfilSayaScreen() {
         setTasteNotes(notes);
         setFavorites(favs);
         setSummonHistory(history);
-        // If we want actual count, we might need a separate count query or just use the list length if small
-        // For now, let's assume we fetch a few more to show count if it's < 5
-        if (m) {
-           const videos = await listMyVideos(m.id, 50, jwt);
-           setMyVideos(videos);
-           setVideoCount(videos.length);
-        }
       } catch (err) {
         console.warn('Profile fetch error', err);
+      } finally {
+        if (!cancelled) setMerchantLoading(false);
       }
     };
 
@@ -193,6 +189,31 @@ export default function ProfilSayaScreen() {
 
     return () => { cancelled = true; };
   }, [auth.jwt, auth.user]);
+
+  // Separate effect for videos to make it more reliable
+  React.useEffect(() => {
+    if (!merchant?.id) {
+      setMyVideos([]);
+      setVideoCount(0);
+      return;
+    }
+
+    let cancelled = false;
+    const fetchVideos = async () => {
+      try {
+        const videos = await listMyVideos(merchant.id, 50, auth.jwt);
+        if (!cancelled) {
+          setMyVideos(videos);
+          setVideoCount(videos.length);
+        }
+      } catch (err) {
+        console.warn('My videos fetch error', err);
+      }
+    };
+
+    fetchVideos();
+    return () => { cancelled = true; };
+  }, [merchant?.id, auth.jwt]);
 
   // Re-fetch merchant specifically when returning to this screen
   useFocusEffect(
@@ -344,6 +365,15 @@ export default function ProfilSayaScreen() {
     // Fallback default avatar for user or empty merchant
     return { uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBBDNHTfocwvNsUYq-ffjnN4gfTfBW7mMBe7Vwy0ahXJdmsqYtzO-We5w3BjBHeqpZw04SSpPGWKFfm1fG67VnIH1fQs1eKs4PMsTiaT24TYO4v0UzetnQzYsyIjX2yYBCG6zM8Unj53H60lnCNUHfDADyuoxA-6ZxER00x4P79cikB6b_vBz3QzKijfyi4M4KGBPl3yiGdKCtOQcTGxnSJ_oxyLNf3PWQM9y3_ZDwkb4lRzbWHqrSamyD4GuJRp4Tra647kYGYFL9w' };
   };
+
+  if (merchantLoading && !merchant) {
+    return (
+      <View style={[styles.screen, { backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <StatusBar style="auto" />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.surface }]}>
@@ -546,7 +576,7 @@ export default function ProfilSayaScreen() {
         {/* ══════════════════════════════════════════════════════════════
             FITUR KHUSUS USER BIASA (NON-MERCHANT)
             ══════════════════════════════════════════════════════════════ */}
-        {isUser && !isMerchant && (
+        {isUser && !merchantLoading && !isMerchant && (
           <>
             {/* ── Radar Switch + Radius ── */}
             <View style={styles.sectionHeader}>

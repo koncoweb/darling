@@ -20,7 +20,9 @@ export default function VideoFeedItem({ video, isActive }: VideoFeedItemProps) {
   
   // Custom padding for the floating tab bar (height is 92)
   const TAB_BAR_HEIGHT = 92;
-  const bottomPadding = Math.max(insets.bottom, 20) + TAB_BAR_HEIGHT;
+  // Increase padding to ensure content is safely above the floating tab bar
+  const bottomPadding = Math.max(insets.bottom, 20) + TAB_BAR_HEIGHT + 24; 
+
 
   const player = useVideoPlayer(video.video_url, (player) => {
     player.loop = true;

@@ -65,9 +65,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           },
         );
         if (!res.ok) return null;
-        const json = (await res.json()) as { token?: string };
+        
+        // Standard fetch parsing
+        let json: any = {};
+        try {
+          json = await res.json();
+        } catch {
+          // Fallback parsing if JSON parsing fails but status was OK
+          try {
+            const text = await res.text();
+            json = JSON.parse(text);
+          } catch {
+            return null;
+          }
+        }
+        
         return typeof json.token === "string" ? json.token : null;
-      } catch {
+      } catch (err) {
+        console.warn('[Auth] fallbackAnonymous failed (silent):', err);
         return null;
       }
     };
@@ -106,12 +121,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     return null;
   }, []);
-
+  
   const hydrate = useCallback(async () => {
-    setIsLoading(true);
     try {
       const storedJwt = await getSecureItem(jwtKey);
-      setJwt(storedJwt);
+      if (storedJwt) setJwt(storedJwt);
 
       let auth: any;
       try {
@@ -120,14 +134,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         return;
       }
+
+      // getSession is much more reliable now that fetch polyfill is cleared
       const sessionResult = await auth.getSession();
       const sessionUser = sessionResult?.data?.user ?? null;
+      
       if (sessionUser) {
         setUser(sessionUser as DarlingUser);
       } else {
         setUser(null);
       }
+      
+      // Always refresh JWT to keep it fresh for Data API
       await refreshJwt();
+    } catch (err) {
+      console.warn('[Auth] Hydration error (silent):', err);
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +174,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       if (result?.error) {
         console.warn('[Auth] signIn.email returned error:', result.error);
-        throw new Error(result.error.message ?? "Sign in failed");
+        const msg = result.error.message || result.error.code || "Sign in failed";
+        throw new Error(msg);
       }
       await hydrate();
     },

@@ -1,6 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import {
@@ -23,7 +23,7 @@ import Colors from '@/constants/Colors';
 import {
     getMyMerchant,
     updateMerchant,
-    listSummonHistory,
+    listMerchantSummons,
     listMyVideos,
     updateSummonStatus,
     type Merchant,
@@ -44,31 +44,60 @@ export default function MerchantDashboardScreen() {
     const [summons, setSummons] = React.useState<SummonHistoryRecord[]>([]);
     const [myVideos, setMyVideos] = React.useState<FeedVideo[]>([]);
     const [refreshing, setRefreshing] = React.useState(false);
+    const [videosLoading, setVideosLoading] = React.useState(false);
 
-    const loadData = async () => {
+    const loadMerchantData = async () => {
         if (!auth.user) return;
         try {
-            const [m, history] = await Promise.all([
-                getMyMerchant(auth.user.id, auth.jwt),
-                listSummonHistory(auth.user.id, 5, auth.jwt)
-            ]);
+            const m = await getMyMerchant(auth.user.id, auth.jwt);
             setMerchant(m);
+            
             if (m) {
-                const videos = await listMyVideos(m.id, 6, auth.jwt);
+                // Fetch summons and videos in parallel using the merchant ID
+                const [history, videos] = await Promise.all([
+                    listMerchantSummons(m.id, 10, auth.jwt),
+                    listMyVideos(m.id, 12, auth.jwt)
+                ]);
+                setSummons(history);
                 setMyVideos(videos);
+                console.log(`[Dashboard] Loaded ${videos.length} videos for merchant ${m.id}`);
             }
-            setSummons(history);
         } catch (e) {
-            console.warn('Failed to load dashboard data', e);
+            console.warn('Failed to load merchant data', e);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
     };
 
+    const loadVideos = async () => {
+        // Redundant with loadMerchantData but kept for manual refreshes if needed
+        if (!merchant?.id) return;
+        setVideosLoading(true);
+        try {
+            const videos = await listMyVideos(merchant.id, 12, auth.jwt);
+            setMyVideos(videos);
+            console.log(`[Dashboard] Videos refreshed: ${videos.length}`);
+        } catch (e) {
+            console.warn('Failed to load dashboard videos', e);
+        } finally {
+            setVideosLoading(false);
+        }
+    };
+
     React.useEffect(() => {
-        loadData();
-    }, [auth.user]);
+        loadMerchantData();
+    }, [auth.user, auth.jwt]);
+
+    React.useEffect(() => {
+        loadVideos();
+    }, [merchant?.id, auth.jwt]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            loadMerchantData();
+        }, [auth.user, auth.jwt])
+    );
 
     const handleToggleActive = async () => {
         if (!merchant) return;
@@ -116,7 +145,7 @@ export default function MerchantDashboardScreen() {
                 contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 100 }]}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} colors={[colors.primary]} />
+                    <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadMerchantData(); }} colors={[colors.primary]} />
                 }
             >
                 {/* ── Status Banner ── */}
@@ -199,7 +228,11 @@ export default function MerchantDashboardScreen() {
 
                 {/* My Stories Feed */}
                 <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 12 }]}>Cerita Anda</Text>
-                {myVideos.length === 0 ? (
+                {videosLoading && myVideos.length === 0 ? (
+                    <View style={{ height: 160, justifyContent: 'center', alignItems: 'center' }}>
+                        <ActivityIndicator size="small" color={colors.primary} />
+                    </View>
+                ) : myVideos.length === 0 ? (
                     <SurfaceCard style={styles.emptyStudioCard}>
                         <FontAwesome name="image" size={32} color={colors.outlineVariant} />
                         <Text style={[styles.emptyStudioText, { color: colors.onSurfaceMuted }]}>

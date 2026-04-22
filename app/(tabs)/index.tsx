@@ -20,13 +20,14 @@ export default function BerandaScreen() {
   const flatListRef = useRef<FlatList>(null);
 
   const fetchVideos = useCallback(async () => {
-    if (!jwt) return; // Wait for JWT if required by API
     try {
       setLoading(true);
       const data = await listFeedVideos(20, jwt);
       setVideos(data);
-    } catch (error) {
-      console.error('Error fetching feed videos:', error);
+    } catch (error: any) {
+      // listFeedVideos already attempts a silent fallback to public data if JWT fails.
+      // If we're here, it means even public access failed or there's a network issue.
+      console.warn('Feed fetch failed even with public fallback:', error.message || error);
     } finally {
       setLoading(false);
     }

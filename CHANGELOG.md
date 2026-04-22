@@ -93,11 +93,26 @@ Format log mendaftar modifikasi fitur diurutkan berdasarkan kegiatan (secara kro
 - **Fixed**: Memperbaiki navigasi tombol "Dasbor Pedagang" di halaman Profil agar mengarah ke rute yang benar tanpa pembungkus Pressable redundan.
 - **Fixed**: Sinkronisasi nama properti profil (`radar_radius_meters` & `pickup_address`) antara frontend dan backend untuk menghilangkan error TypeScript.
 
-### [09:00 - 10:30 WIB] Implementasi Dasbor Pedagang & Integrasi AI Studio
-- **Added**: Layar Dasbor Pedagang (`app/merchant/dashboard.tsx`) sebagai pusat kendali operasional pedagang.
-- **Features**: Toggle status "Keliling" (Aktif) vs "Istirahat" (Off) dengan pembaruan *real-time* ke database Neon.
-- **Features**: Implementasi manajemen Panggilan/Summon dari pelanggan dengan aksi "Tiba" (Arrive) yang memperbarui status transaksi.
-- **Features**: Integrasi mendalam ke AI Studio menggunakan parameter route (`mode: 'merchant'`) untuk memberikan saran promosi otomatis (contoh: "Beli 2 Gratis 1").
+### [13:00 - 13:45 WIB] Stabilisasi Autentikasi & Sinkronisasi Data Pedagang
+
+- **Fixed**: Mengatasi error `Response.json is not a function` dengan menghapus global fetch interceptor (`lib/polyfills/fetch.js`) yang terlalu agresif. Injeksi header kini terfokus hanya pada pipeline `neonAuth`.
+- **Fixed**: Memperbaiki masalah *flickering* UI pada halaman profil (`app/(tabs)/profile.tsx`) dengan menambahkan `merchantLoading` state guard, memastikan UI pedagang hanya muncul setelah data sepenuhnya terverifikasi.
+- **Fixed**: Resolusi *SyntaxError* pada `AuthProvider.tsx` yang sempat menyebabkan aplikasi *crash* (restorasi deklarasi fungsi `hydrate`).
+- **Added**: Implementasi fungsi `listMerchantSummons` di `lib/dataApi.ts` untuk pengambilan data panggilan masuk yang lebih akurat bagi pedagang.
+- **Improved**: Sinkronisasi data pada dasbor pedagang menggunakan `useFocusEffect` dari `@react-navigation/native`, memastikan data panggilan dan video selalu *up-to-date* saat layar difokuskan kembali.
+- **Improved**: Optimasi `dataApiRequest` dengan mekanisme *silent fallback* (mencoba *authenticated fetch* terlebih dahulu, jika gagal akan menggunakan *anonymous fetch*) untuk meningkatkan *resilience* aplikasi terhadap fluktuasi status sesi JWT.
+
+### Ringkasan Pelajaran Troubleshooting (Lessons Learned)
+
+| Gejala Error | Akar Masalah | Solusi |
+|---|---|---|
+| `Response.json is not a function` | Global fetch polyfill membungkus objek `Response` asli sehingga metode internalnya hilang. | Hapus interceptor global dan gunakan konfigurasi `fetchOptions` spesifik pada library adapter. |
+| UI Profil Flickering | Kondisi `merchant` masih `null` saat pengecekan awal meskipun user adalah pedagang. | Gunakan state `merchantLoading` untuk menahan rendering UI user biasa sampai status pedagang terkonfirmasi. |
+| Data Dasbor Stale | Pengambilan data hanya terjadi saat `mount` komponen. | Gunakan `useFocusEffect` untuk memicu pengambilan data setiap kali user masuk ke layar dasbor. |
+| "Unexpected end of JSON input" | API mengembalikan respon kosong atau status 204 yang tidak ditangani dengan baik oleh `.json()`. | Tambahkan pengecekan `response.ok` dan `response.status === 204` sebelum melakukan parsing. |
+
+---
+
 - **Added**: Feed "Cerita Anda" pada dasbor yang menampilkan daftar video promosi milik pedagang sendiri menggunakan fungsi `listMyVideos`.
 - **Improved**: Sinkronisasi status merchant di halaman Profil menggunakan `useFocusEffect` untuk memastikan data terbaru selalu ditampilkan saat kembali dari dasbor.
 
@@ -125,5 +140,21 @@ Format log mendaftar modifikasi fitur diurutkan berdasarkan kegiatan (secara kro
 | **Request Too Large (10MB)** | Masalah: Neon Data API memiliki limit payload 10MB, menyebabkan kegagalan saat upload video Base64. <br>Solusi: Gunakan Cloudinary sebagai *media hosting* eksternal. Upload dilakukan langsung dari client menggunakan *Unsigned Preset*. |
 | **RLS Error 42501** | Masalah: Gagal insert ke tabel `videos` karena kebijakan RLS tidak mengenali user. <br>Solusi: Ganti `auth.user_id()` dengan `auth.uid()`. <br>Pelajaran: Pada PostgreSQL 17 dengan Neon Auth, `auth.uid()` adalah fungsi bawaan yang paling tepat untuk mengambil UUID user dari JWT. |
 | **Keamanan Merchants** | Masalah: Tabel `merchants` sebelumnya memiliki *write policy* yang terlalu terbuka (`qual: true`). <br>Solusi: Terapkan pengecekan `owner_user_id = auth.uid()` di level database untuk mencegah manipulasi data oleh user lain. |
+
+### [11:15 - 12:45 WIB] Modernisasi Media Feed & Perbaikan UI/UX Premium
+- **Added**: Implementasi *Vertical TikTok-style Feed* pada halaman Beranda (`app/(tabs)/index.tsx`) menggunakan `pagingEnabled` dan `FlatList` berkinerja tinggi.
+- **Added**: Komponen `VideoFeedItem` (full-screen) dan `VideoGridItem` (grid preview) untuk standarisasi tampilan media di seluruh aplikasi.
+- **Changed**: Strategi *Thumbnailing* kini dilakukan secara dinamis melalui Cloudinary (`lib/cloudinary.ts`) dengan transformasi on-the-fly (`f_auto,q_auto,so_auto`), mengurangi beban database.
+- **Fixed**: Mengatasi error "JWT Token" pada Beranda dengan mekanisme *anonymous fallback* jika JWT ditemukan tidak valid atau kedaluwarsa saat pertama dimuat.
+- **Fixed**: Penyesuaian layout `VideoFeedItem` dengan penambahan *bottom padding* (dinamis berpatokan pada `TAB_BAR_HEIGHT` & Safe Area) demi mencegah teks caption/nama pedagang tertutup oleh menu navigasi bawah.
+- **Improved**: Mendukung *Deep Linking* ke video spesifik menggunakan parameter `initialVideoId`, memudahkan navigasi dari notifikasi atau dasbor ke feed utama.
+
+### Ringkasan Pelajaran Teknis (Sesi Modernisasi Feed)
+
+| Kendala / Masalah | Solusi & Pembelajan |
+|---|---|
+| **JWT Missing/Invalid** | Masalah: API `listFeedVideos` dipanggil sebelum `auth.jwt` siap atau saat token kedaluwarsa. <br>Solusi: Gunakan blok `try-catch` dengan fallback ke pemanggilan anonim agar feed tetap dapat dilihat tamu. |
+| **UI Overlap (Tab Bar)** | Masalah: Navigasi bawah (`position: 'absolute'`) menutupi detail pedagang di video. <br>Solusi: Hitung `bottomPadding` yang spesifik (insektisida aman + tinggi tab bar + buffer) pada overlay konten video. |
+| **Paging Performance** | Masalah: Scroll paging sering terasa berat pada video. <br>Solusi: Konfigurasi `getItemLayout` secara akurat berdasarkan `WINDOW_HEIGHT` agar FlatList dapat memprediksi posisi scroll dengan efisiensi memori tinggi. |
 
 ---
