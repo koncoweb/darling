@@ -48,6 +48,7 @@ export default function MerchantDashboardScreen() {
 
     const loadMerchantData = async () => {
         if (!auth.user) return;
+        setVideosLoading(true);
         try {
             const m = await getMyMerchant(auth.user.id, auth.jwt);
             setMerchant(m);
@@ -67,31 +68,9 @@ export default function MerchantDashboardScreen() {
         } finally {
             setLoading(false);
             setRefreshing(false);
-        }
-    };
-
-    const loadVideos = async () => {
-        // Redundant with loadMerchantData but kept for manual refreshes if needed
-        if (!merchant?.id) return;
-        setVideosLoading(true);
-        try {
-            const videos = await listMyVideos(merchant.id, 12, auth.jwt);
-            setMyVideos(videos);
-            console.log(`[Dashboard] Videos refreshed: ${videos.length}`);
-        } catch (e) {
-            console.warn('Failed to load dashboard videos', e);
-        } finally {
             setVideosLoading(false);
         }
     };
-
-    React.useEffect(() => {
-        loadMerchantData();
-    }, [auth.user, auth.jwt]);
-
-    React.useEffect(() => {
-        loadVideos();
-    }, [merchant?.id, auth.jwt]);
 
     useFocusEffect(
         React.useCallback(() => {
